@@ -19,7 +19,7 @@ import {
   Sun,
   Monitor
 } from 'lucide-react';
-import { useUserProfile } from '../hooks';
+import { useUserProfile } from '@/hooks';
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('profile');
