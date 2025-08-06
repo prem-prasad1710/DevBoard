@@ -15,7 +15,7 @@ import {
   Settings,
   Loader2
 } from 'lucide-react';
-import { useAIChat } from '../hooks';
+import { useAIChat } from '@/hooks';
 
 const AIMentorPage = () => {
   const [currentMessage, setCurrentMessage] = useState('');

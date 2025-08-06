@@ -415,18 +415,138 @@ export const useAIChat = () => {
   };
 };
 
-// Code Challenges Hook
+// Code Challenges Hook (Mock Implementation)
 export const useCodeChallenges = () => {
-  const [limit, setLimit] = useState(20);
-  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const { data, loading, error, refetch } = useQuery(GET_CODE_CHALLENGES, {
-    variables: { limit, offset },
-    fetchPolicy: 'cache-and-network'
-  });
+  // Mock data for code challenges
+  const mockChallenges: CodeChallenge[] = [
+    {
+      id: '1',
+      title: 'Two Sum',
+      description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
+      difficulty: 'easy',
+      language: 'JavaScript',
+      category: 'Arrays',
+      completed: true,
+      completedAt: new Date('2024-01-15'),
+      createdAt: new Date('2024-01-01'),
+      testCases: [
+        { input: '[2,7,11,15], 9', expectedOutput: '[0,1]', description: 'Basic test case' },
+        { input: '[3,2,4], 6', expectedOutput: '[1,2]', description: 'Different indices' }
+      ]
+    },
+    {
+      id: '2',
+      title: 'Reverse String',
+      description: 'Write a function that reverses a string. The input string is given as an array of characters s.',
+      difficulty: 'easy',
+      language: 'Python',
+      category: 'Strings',
+      completed: true,
+      createdAt: new Date('2024-01-02'),
+      testCases: [
+        { input: '["h","e","l","l","o"]', expectedOutput: '["o","l","l","e","h"]', description: 'Basic string reverse' }
+      ]
+    },
+    {
+      id: '3',
+      title: 'Binary Tree Traversal',
+      description: 'Given the root of a binary tree, return the inorder traversal of its nodes values.',
+      difficulty: 'medium',
+      language: 'Java',
+      category: 'Trees',
+      completed: true,
+      completedAt: new Date('2024-01-20'),
+      createdAt: new Date('2024-01-03'),
+      testCases: [
+        { input: '[1,null,2,3]', expectedOutput: '[1,3,2]', description: 'Standard tree traversal' }
+      ]
+    },
+    {
+      id: '4',
+      title: 'Longest Substring Without Repeating Characters',
+      description: 'Given a string s, find the length of the longest substring without repeating characters.',
+      difficulty: 'medium',
+      language: 'C++',
+      category: 'Strings',
+      completed: false,
+      createdAt: new Date('2024-01-04'),
+      testCases: [
+        { input: '"abcabcbb"', expectedOutput: '3', description: 'Substring "abc" has length 3' },
+        { input: '"bbbbb"', expectedOutput: '1', description: 'All same characters' }
+      ]
+    },
+    {
+      id: '5',
+      title: 'Merge K Sorted Lists',
+      description: 'You are given an array of k linked-lists lists, each linked-list is sorted in ascending order.',
+      difficulty: 'hard',
+      language: 'JavaScript',
+      category: 'Linked Lists',
+      completed: false,
+      createdAt: new Date('2024-01-05'),
+      testCases: [
+        { input: '[[1,4,5],[1,3,4],[2,6]]', expectedOutput: '[1,1,2,3,4,4,5,6]', description: 'Merge multiple sorted lists' }
+      ]
+    },
+    {
+      id: '6',
+      title: 'Valid Parentheses',
+      description: 'Given a string s containing just the characters "(", ")", "{", "}", "[" and "]", determine if the input string is valid.',
+      difficulty: 'easy',
+      language: 'Python',
+      category: 'Stack',
+      completed: true,
+      completedAt: new Date('2024-01-10'),
+      createdAt: new Date('2024-01-06'),
+      testCases: [
+        { input: '"()"', expectedOutput: 'true', description: 'Simple valid parentheses' },
+        { input: '"()[]{}"', expectedOutput: 'true', description: 'Mixed valid parentheses' },
+        { input: '"(]"', expectedOutput: 'false', description: 'Invalid parentheses' }
+      ]
+    },
+    {
+      id: '7',
+      title: 'Maximum Subarray',
+      description: 'Given an integer array nums, find the contiguous subarray with the largest sum, and return its sum.',
+      difficulty: 'medium',
+      language: 'Java',
+      category: 'Dynamic Programming',
+      completed: false,
+      createdAt: new Date('2024-01-07'),
+      testCases: [
+        { input: '[-2,1,-3,4,-1,2,1,-5,4]', expectedOutput: '6', description: 'Subarray [4,-1,2,1] has sum 6' }
+      ]
+    },
+    {
+      id: '8',
+      title: 'Regular Expression Matching',
+      description: 'Given an input string s and a pattern p, implement regular expression matching with support for "." and "*".',
+      difficulty: 'hard',
+      language: 'C++',
+      category: 'Dynamic Programming',
+      completed: false,
+      createdAt: new Date('2024-01-08'),
+      testCases: [
+        { input: 's = "aa", p = "a"', expectedOutput: 'false', description: 'Pattern does not match entire string' },
+        { input: 's = "aa", p = "a*"', expectedOutput: 'true', description: 'Pattern matches with wildcard' }
+      ]
+    }
+  ];
+
+  const refetch = useCallback(() => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      console.log('Code challenges refreshed');
+    }, 500);
+  }, []);
 
   return {
-    challenges: data?.codeChallenges as CodeChallenge[],
+    challenges: mockChallenges || [],
     loading,
     error,
     refetch

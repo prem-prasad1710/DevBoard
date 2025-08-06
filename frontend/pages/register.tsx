@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../src/contexts/AuthContext';
 import { Eye, EyeOff, Github, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 
 const RegisterPage = () => {

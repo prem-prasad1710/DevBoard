@@ -19,7 +19,7 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
-import { useOpenIssues } from '../hooks';
+import { useOpenIssues } from '@/hooks';
 
 const OpenIssuesPage = () => {
   const router = useRouter();

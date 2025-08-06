@@ -4,8 +4,8 @@ import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from 'next-themes';
 import Head from 'next/head';
 import client from '@/lib/apollo-client';
-import { AuthProvider } from '../contexts/AuthContext';
-import '../../styles/globals.css';
+import { AuthProvider } from '@/contexts/AuthContext';
+import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (

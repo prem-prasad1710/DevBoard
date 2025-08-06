@@ -13,7 +13,7 @@ import {
   GraduationCap,
   Code
 } from 'lucide-react';
-import { useResume } from '../hooks';
+import { useResume } from '@/hooks';
 
 const ResumePage = () => {
   const [isEditing, setIsEditing] = useState(false);

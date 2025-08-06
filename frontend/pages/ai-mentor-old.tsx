@@ -16,7 +16,7 @@ import {
   Clock,
   Settings
 } from 'lucide-react';
-import { useAIChat } from '../hooks';
+import { useAIChat } from '@/hooks';
 
 const AIMentorPage = () => {
   const router = useRouter();

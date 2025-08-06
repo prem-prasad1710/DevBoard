@@ -1,25 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { 
-  Code, 
-  Play, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  ArrowLeft,
-  Trophy,
-  Target,
-  Star,
-  Calendar,
-  Filter,
-  Search,
-  Plus,
-  BookOpen,
-  Zap,
-  Award
-} from 'lucide-react';
-import { useCodeChallenges } from '../hooks';
+import Layout from '@/components/Layout';
+import dynamic from 'next/dynamic';
+import { useTheme } from 'next-themes';
+
+// Dynamically import icons to prevent hydration issues
+const Code = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Code })), { ssr: false });
+const Play = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Play })), { ssr: false });
+const CheckCircle = dynamic(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle })), { ssr: false });
+const XCircle = dynamic(() => import('lucide-react').then(mod => ({ default: mod.XCircle })), { ssr: false });
+const Clock = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Clock })), { ssr: false });
+const Trophy = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Trophy })), { ssr: false });
+const Target = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Target })), { ssr: false });
+const Star = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Star })), { ssr: false });
+const Search = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Search })), { ssr: false });
+const BookOpen = dynamic(() => import('lucide-react').then(mod => ({ default: mod.BookOpen })), { ssr: false });
+const Zap = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Zap })), { ssr: false });
+const Award = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Award })), { ssr: false });
+const Sun = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Sun })), { ssr: false });
+const Moon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Moon })), { ssr: false });
+
+import { useCodeChallenges } from '@/hooks';
 
 const CodeChallengesPage = () => {
   const router = useRouter();
@@ -28,11 +30,42 @@ const CodeChallengesPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showCompleted, setShowCompleted] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const { challenges, loading, error, refetch } = useCodeChallenges();
 
+  // Toggle between light and dark theme for cards
+  const toggleCardTheme = () => {
+    if (theme === 'dark') {
+      setTheme('light');
+    } else {
+      setTheme('dark');
+    }
+  };
+
+  // Ensure consistent rendering between server and client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Consistent date formatting function
+  const formatDate = (date: Date | string) => {
+    if (!isClient) return ''; // Return empty string on server to avoid hydration mismatch
+    
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
+  // Ensure challenges is always an array
+  const safeChallenges = challenges || [];
+
   // Filter challenges
-  const filteredChallenges = challenges.filter(challenge => {
+  const filteredChallenges = safeChallenges.filter(challenge => {
     const matchesSearch = !searchTerm || 
       challenge.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       challenge.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -46,9 +79,9 @@ const CodeChallengesPage = () => {
   });
 
   // Get unique values for filters
-  const difficulties = [...new Set(challenges.map(challenge => challenge.difficulty))];
-  const languages = [...new Set(challenges.map(challenge => challenge.language))];
-  const categories = [...new Set(challenges.map(challenge => challenge.category))];
+  const difficulties = [...new Set(safeChallenges.map(challenge => challenge.difficulty))];
+  const languages = [...new Set(safeChallenges.map(challenge => challenge.language))];
+  const categories = [...new Set(safeChallenges.map(challenge => challenge.category))];
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -68,46 +101,89 @@ const CodeChallengesPage = () => {
     }
   };
 
-  const completedChallenges = challenges.filter(c => c.completed).length;
-  const totalChallenges = challenges.length;
+  const completedChallenges = safeChallenges.filter(c => c.completed).length;
+  const totalChallenges = safeChallenges.length;
   const completionRate = totalChallenges > 0 ? Math.round((completedChallenges / totalChallenges) * 100) : 0;
 
+  // Theme-aware card styling
+  const getCardStyles = () => {
+    if (!isClient) {
+      // Default for SSR
+      return {
+        card: 'bg-white border border-gray-200 text-gray-900',
+        title: 'text-gray-900',
+        description: 'text-gray-600',
+        metadata: 'text-gray-500',
+        icons: 'text-gray-500'
+      };
+    }
+    
+    if (theme === 'dark') {
+      return {
+        card: 'bg-black border border-gray-300 text-white-900',
+        title: 'text-white-900',
+        description: 'text-white-600',
+        metadata: 'text-white-500',
+        icons: 'text-white-500'
+      };
+    } else {
+      return {
+        card: 'bg-white-900 border border-gray-600 text-black',
+        title: 'text-black',
+        description: 'text-black-300',
+        metadata: 'text-black-400',
+        icons: 'text-black-400'
+      };
+    }
+  };
+
+  const cardStyles = getCardStyles();
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/" className="p-2 text-gray-400 hover:text-gray-600 mr-4">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-              <div className="flex items-center">
-                <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
-                  <Code className="h-5 w-5 text-indigo-600" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-semibold text-gray-900">Code Challenges</h1>
-                  <p className="text-sm text-gray-500">Practice and improve your coding skills</p>
-                </div>
-              </div>
+    <Layout>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="flex items-center justify-between ">
+          <div className="flex items-center">
+            <div className="h-10 w-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
+              <Code className="h-6 w-6 text-indigo-600" />
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500">
-                {completedChallenges}/{totalChallenges} completed ({completionRate}%)
-              </div>
-              <button
-                onClick={() => refetch()}
-                className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
-                Refresh
-              </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Code Challenges</h1>
+              <p className="text-gray-600">Practice and improve your coding skills</p>
             </div>
           </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-sm text-gray-500">
+              {completedChallenges}/{totalChallenges} completed ({completionRate}%)
+            </div>
+            {isClient && (
+              <button
+                onClick={toggleCardTheme}
+                className="flex items-center px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+                title="Toggle card theme"
+              >
+                {theme === 'dark' ? (
+                  <>
+                    <Sun className="h-4 w-4 mr-2" />
+                    Light Cards
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4 mr-2" />
+                    Dark Cards
+                  </>
+                )}
+              </button>
+            )}
+            <button
+              onClick={() => refetch()}
+              className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-white p-6 rounded-lg shadow-sm">
@@ -258,7 +334,7 @@ const CodeChallengesPage = () => {
             </div>
           ) : (
             filteredChallenges.map((challenge) => (
-              <div key={challenge.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+              <div key={challenge.id} className={`${cardStyles.card} rounded-lg shadow-sm hover:shadow-md transition-shadow`}>
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center">
@@ -283,34 +359,34 @@ const CodeChallengesPage = () => {
                     )}
                   </div>
 
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className={`text-lg font-semibold ${cardStyles.title} mb-2`}>
                     {challenge.title}
                   </h3>
                   
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                  <p className={`${cardStyles.description} text-sm mb-4 line-clamp-3`}>
                     {challenge.description}
                   </p>
 
-                  <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                  <div className={`flex items-center justify-between text-sm ${cardStyles.metadata} mb-4`}>
                     <div className="flex items-center">
-                      <Code className="h-4 w-4 mr-1" />
+                      <Code className={`h-4 w-4 mr-1 ${cardStyles.icons}`} />
                       <span>{challenge.language}</span>
                     </div>
                     <div className="flex items-center">
-                      <BookOpen className="h-4 w-4 mr-1" />
+                      <BookOpen className={`h-4 w-4 mr-1 ${cardStyles.icons}`} />
                       <span>{challenge.category}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="text-xs text-gray-500">
+                    <div className={`text-xs ${cardStyles.metadata}`}>
                       {challenge.testCases.length} test cases
                     </div>
                     <div className="flex items-center space-x-2">
                       {challenge.completed && challenge.completedAt && (
-                        <div className="flex items-center text-xs text-gray-500">
+                        <div className={`flex items-center text-xs ${cardStyles.metadata}`}>
                           <Clock className="h-3 w-3 mr-1" />
-                          {new Date(challenge.completedAt).toLocaleDateString()}
+                          {formatDate(challenge.completedAt)}
                         </div>
                       )}
                       <button
@@ -328,7 +404,7 @@ const CodeChallengesPage = () => {
           )}
         </div>
       </div>
-    </div>
+    </Layout>
   );
 };
 

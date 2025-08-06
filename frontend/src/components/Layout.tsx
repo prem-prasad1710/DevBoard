@@ -1,30 +1,32 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  LayoutDashboard,
-  GitBranch,
-  MessageCircle,
-  BookOpen,
-  Target,
-  User,
-  FileText,
-  Code,
-  Brain,
-  Settings,
-  Menu,
-  X,
-  Sun,
-  Moon,
-  Monitor,
-  Bell,
-  Search,
-  Plus
-} from 'lucide-react';
-import { useTheme } from '@/hooks';
+
+// Dynamically import all icons to prevent hydration issues
+const LayoutDashboard = dynamic(() => import('lucide-react').then(mod => ({ default: mod.LayoutDashboard })), { ssr: false });
+const GitBranch = dynamic(() => import('lucide-react').then(mod => ({ default: mod.GitBranch })), { ssr: false });
+const MessageCircle = dynamic(() => import('lucide-react').then(mod => ({ default: mod.MessageCircle })), { ssr: false });
+const BookOpen = dynamic(() => import('lucide-react').then(mod => ({ default: mod.BookOpen })), { ssr: false });
+const Target = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Target })), { ssr: false });
+const User = dynamic(() => import('lucide-react').then(mod => ({ default: mod.User })), { ssr: false });
+const FileText = dynamic(() => import('lucide-react').then(mod => ({ default: mod.FileText })), { ssr: false });
+const Code = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Code })), { ssr: false });
+const Brain = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Brain })), { ssr: false });
+const Settings = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Settings })), { ssr: false });
+const Menu = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Menu })), { ssr: false });
+const X = dynamic(() => import('lucide-react').then(mod => ({ default: mod.X })), { ssr: false });
+const Sun = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Sun })), { ssr: false });
+const Moon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Moon })), { ssr: false });
+const Monitor = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Monitor })), { ssr: false });
+const Bell = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Bell })), { ssr: false });
+const Search = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Search })), { ssr: false });
+const Plus = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Plus })), { ssr: false });
+
+import { useTheme } from 'next-themes';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -37,7 +39,7 @@ const navigation = [
   { name: 'Journal', href: '/journal', icon: BookOpen },
   { name: 'Projects', href: '/projects', icon: Target },
   { name: 'Resume', href: '/resume', icon: FileText },
-  { name: 'Code Challenges', href: '/challenges', icon: Code },
+  { name: 'Code Challenges', href: '/code-challenges', icon: Code },
   { name: 'AI Mentor', href: '/ai-mentor', icon: Brain },
   { name: 'Profile', href: '/profile', icon: User },
   { name: 'Settings', href: '/settings', icon: Settings },

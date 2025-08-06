@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { 
@@ -13,12 +13,36 @@ import {
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+// import { useAuth } from '@/contexts/AuthContext';
+
+// Temporary mock auth for development
+const useMockAuth = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    setIsLoading(false);
+    // Mock successful login
+    console.log('Mock login:', { email, password });
+  };
+  
+  const register = async (userData: any) => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    setIsLoading(false);
+    // Mock successful registration
+    console.log('Mock register:', userData);
+  };
+  
+  return { login, register, isLoading };
+};
 
 const AuthPage = () => {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -30,7 +54,29 @@ const AuthPage = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login, register, isLoading } = useAuth();
+  const { login, register, isLoading } = useMockAuth();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Don't render icons until component is mounted on client
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="flex justify-center">
+            <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-xl">D</span>
+            </div>
+          </div>
+          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
+            Loading...
+          </h2>
+        </div>
+      </div>
+    );
+  }
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -108,23 +154,23 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-xl">D</span>
+          <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center">
+            <span className="text-primary-foreground font-bold text-xl">D</span>
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-foreground">
           {isLogin ? 'Sign in to DevBoard' : 'Create your DevBoard account'}
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           {isLogin ? (
             <>
               Don't have an account?{' '}
               <button
                 onClick={() => setIsLogin(false)}
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-primary hover:text-primary/80"
               >
                 Sign up
               </button>
@@ -134,7 +180,7 @@ const AuthPage = () => {
               Already have an account?{' '}
               <button
                 onClick={() => setIsLogin(true)}
-                className="font-medium text-blue-600 hover:text-blue-500"
+                className="font-medium text-primary hover:text-primary/80"
               >
                 Sign in
               </button>
@@ -144,14 +190,14 @@ const AuthPage = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-card py-8 px-4 shadow border sm:rounded-lg sm:px-10">
           {/* Social Login Options */}
           <div className="space-y-3 mb-6">
-            <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            <button className="w-full flex items-center justify-center px-4 py-2 border border-input rounded-lg shadow-sm bg-background text-sm font-medium text-foreground hover:bg-accent transition-colors">
               <Github className="h-5 w-5 mr-2" />
               Continue with GitHub
             </button>
-            <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            <button className="w-full flex items-center justify-center px-4 py-2 border border-input rounded-lg shadow-sm bg-background text-sm font-medium text-foreground hover:bg-accent transition-colors">
               <Chrome className="h-5 w-5 mr-2" />
               Continue with Google
             </button>
@@ -159,19 +205,19 @@ const AuthPage = () => {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+              <span className="px-2 bg-card text-muted-foreground">Or continue with email</span>
             </div>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="mt-6 space-y-6">
             {errors.general && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center">
-                <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
-                <span className="text-sm text-red-700">{errors.general}</span>
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center">
+                <AlertCircle className="h-5 w-5 text-destructive mr-2" />
+                <span className="text-sm text-destructive">{errors.general}</span>
               </div>
             )}
 
@@ -180,12 +226,12 @@ const AuthPage = () => {
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="firstName" className="block text-sm font-medium text-card-foreground mb-1">
                       First Name
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="h-5 w-5 text-gray-400" />
+                        <User className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <input
                         id="firstName"
@@ -193,24 +239,24 @@ const AuthPage = () => {
                         type="text"
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                          errors.firstName ? 'border-red-300' : 'border-gray-300'
+                        className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm placeholder-muted-foreground bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent sm:text-sm ${
+                          errors.firstName ? 'border-destructive' : 'border-input'
                         }`}
                         placeholder="John"
                       />
                     </div>
                     {errors.firstName && (
-                      <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                      <p className="mt-1 text-sm text-destructive">{errors.firstName}</p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label htmlFor="lastName" className="block text-sm font-medium text-card-foreground mb-1">
                       Last Name
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="h-5 w-5 text-gray-400" />
+                        <User className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <input
                         id="lastName"
@@ -218,25 +264,25 @@ const AuthPage = () => {
                         type="text"
                         value={formData.lastName}
                         onChange={handleInputChange}
-                        className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                          errors.lastName ? 'border-red-300' : 'border-gray-300'
+                        className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm placeholder-muted-foreground bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent sm:text-sm ${
+                          errors.lastName ? 'border-destructive' : 'border-input'
                         }`}
                         placeholder="Doe"
                       />
                     </div>
                     {errors.lastName && (
-                      <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                      <p className="mt-1 text-sm text-destructive">{errors.lastName}</p>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="username" className="block text-sm font-medium text-card-foreground mb-1">
                     Username
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-gray-400" />
+                      <User className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <input
                       id="username"
@@ -244,14 +290,14 @@ const AuthPage = () => {
                       type="text"
                       value={formData.username}
                       onChange={handleInputChange}
-                      className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                        errors.username ? 'border-red-300' : 'border-gray-300'
+                      className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm placeholder-muted-foreground bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent sm:text-sm ${
+                        errors.username ? 'border-destructive' : 'border-input'
                       }`}
                       placeholder="johndoe"
                     />
                   </div>
                   {errors.username && (
-                    <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+                    <p className="mt-1 text-sm text-destructive">{errors.username}</p>
                   )}
                 </div>
               </>
@@ -259,12 +305,12 @@ const AuthPage = () => {
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-card-foreground mb-1">
                 Email Address
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <input
                   id="email"
@@ -272,25 +318,25 @@ const AuthPage = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
+                  className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm placeholder-muted-foreground bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent sm:text-sm ${
+                    errors.email ? 'border-destructive' : 'border-input'
                   }`}
                   placeholder="john@example.com"
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.email}</p>
               )}
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-card-foreground mb-1">
                 Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+                  <Lock className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <input
                   id="password"
@@ -298,8 +344,8 @@ const AuthPage = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`block w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
+                  className={`block w-full pl-10 pr-10 py-2 border rounded-lg shadow-sm placeholder-muted-foreground bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent sm:text-sm ${
+                    errors.password ? 'border-destructive' : 'border-input'
                   }`}
                   placeholder="••••••••"
                 />
@@ -309,26 +355,26 @@ const AuthPage = () => {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
+                    <EyeOff className="h-5 w-5 text-muted-foreground" />
                   ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
+                    <Eye className="h-5 w-5 text-muted-foreground" />
                   )}
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                <p className="mt-1 text-sm text-destructive">{errors.password}</p>
               )}
             </div>
 
             {/* Confirm Password (Registration only) */}
             {!isLogin && (
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-card-foreground mb-1">
                   Confirm Password
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <input
                     id="confirmPassword"
@@ -336,14 +382,14 @@ const AuthPage = () => {
                     type="password"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
-                      errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                    className={`block w-full pl-10 pr-3 py-2 border rounded-lg shadow-sm placeholder-muted-foreground bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent sm:text-sm ${
+                      errors.confirmPassword ? 'border-destructive' : 'border-input'
                     }`}
                     placeholder="••••••••"
                   />
                 </div>
                 {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                  <p className="mt-1 text-sm text-destructive">{errors.confirmPassword}</p>
                 )}
               </div>
             )}
@@ -356,15 +402,15 @@ const AuthPage = () => {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-primary focus:ring-ring border-input rounded"
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-card-foreground">
                     Remember me
                   </label>
                 </div>
 
                 <div className="text-sm">
-                  <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+                  <a href="#" className="font-medium text-primary hover:text-primary/80">
                     Forgot your password?
                   </a>
                 </div>
@@ -375,10 +421,10 @@ const AuthPage = () => {
             <button
               type="submit"
               disabled={isSubmitting || isLoading}
-              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting || isLoading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div>
               ) : (
                 <>
                   {isLogin ? 'Sign in' : 'Create account'}
@@ -390,13 +436,13 @@ const AuthPage = () => {
 
           {/* Terms */}
           {!isLogin && (
-            <p className="mt-6 text-xs text-gray-500 text-center">
+            <p className="mt-6 text-xs text-muted-foreground text-center">
               By creating an account, you agree to our{' '}
-              <a href="#" className="text-blue-600 hover:text-blue-500">
+              <a href="#" className="text-primary hover:text-primary/80">
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a href="#" className="text-blue-600 hover:text-blue-500">
+              <a href="#" className="text-primary hover:text-primary/80">
                 Privacy Policy
               </a>
             </p>
