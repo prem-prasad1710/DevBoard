@@ -2,9 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  experimental: {
-    appDir: false,
-  },
   pageExtensions: ['ts', 'tsx', 'js', 'jsx'],
   images: {
     domains: [
