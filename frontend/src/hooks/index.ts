@@ -367,16 +367,95 @@ export const useProjects = () => {
 
 // Open Issues Hook
 export const useOpenIssues = () => {
-  const [limit, setLimit] = useState(20);
-  const [offset, setOffset] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const { data, loading, error, refetch } = useQuery(GET_OPEN_ISSUES, {
-    variables: { limit, offset },
-    fetchPolicy: 'cache-and-network'
-  });
+  // Mock data for open issues
+  const mockIssues: OpenIssue[] = [
+    {
+      id: '1',
+      title: 'Add TypeScript support for React components',
+      description: 'Need to add proper TypeScript definitions for all React components in the library.',
+      repository: 'awesome-react-lib',
+      language: 'TypeScript',
+      difficulty: 'intermediate',
+      labels: ['typescript', 'react', 'good-first-issue'],
+      createdAt: new Date('2024-01-15T10:30:00Z'),
+      url: 'https://github.com/facebook/awesome-react-lib/issues/123',
+      githubUrl: 'https://github.com/facebook/awesome-react-lib'
+    },
+    {
+      id: '2',
+      title: 'Fix memory leak in data processing',
+      description: 'There is a memory leak when processing large datasets. Need to optimize the algorithm.',
+      repository: 'data-processor',
+      language: 'Python',
+      difficulty: 'advanced',
+      labels: ['bug', 'performance', 'memory'],
+      createdAt: new Date('2024-01-14T15:45:00Z'),
+      url: 'https://github.com/google/data-processor/issues/456',
+      githubUrl: 'https://github.com/google/data-processor'
+    },
+    {
+      id: '3',
+      title: 'Add dark mode support',
+      description: 'Users have requested dark mode support for better user experience.',
+      repository: 'ui-components',
+      language: 'JavaScript',
+      difficulty: 'beginner',
+      labels: ['enhancement', 'ui', 'good-first-issue'],
+      createdAt: new Date('2024-01-13T09:20:00Z'),
+      url: 'https://github.com/microsoft/ui-components/issues/789',
+      githubUrl: 'https://github.com/microsoft/ui-components'
+    },
+    {
+      id: '4',
+      title: 'Improve documentation for API endpoints',
+      description: 'The current API documentation is incomplete and needs better examples.',
+      repository: 'api-docs',
+      language: 'Markdown',
+      difficulty: 'beginner',
+      labels: ['documentation', 'api', 'help-wanted'],
+      createdAt: new Date('2024-01-12T14:10:00Z'),
+      url: 'https://github.com/vercel/api-docs/issues/321',
+      githubUrl: 'https://github.com/vercel/api-docs'
+    },
+    {
+      id: '5',
+      title: 'Optimize database queries',
+      description: 'Several database queries are running slow and need optimization.',
+      repository: 'backend-service',
+      language: 'Go',
+      difficulty: 'advanced',
+      labels: ['performance', 'database', 'optimization'],
+      createdAt: new Date('2024-01-11T11:30:00Z'),
+      url: 'https://github.com/netflix/backend-service/issues/654',
+      githubUrl: 'https://github.com/netflix/backend-service'
+    },
+    {
+      id: '6',
+      title: 'Add unit tests for utility functions',
+      description: 'Need to add comprehensive unit tests for all utility functions.',
+      repository: 'utils-library',
+      language: 'JavaScript',
+      difficulty: 'intermediate',
+      labels: ['testing', 'quality', 'good-first-issue'],
+      createdAt: new Date('2024-01-10T16:45:00Z'),
+      url: 'https://github.com/airbnb/utils-library/issues/987',
+      githubUrl: 'https://github.com/airbnb/utils-library'
+    }
+  ];
+
+  const refetch = useCallback(() => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, []);
 
   return {
-    issues: data?.openIssues as OpenIssue[],
+    issues: mockIssues,
     loading,
     error,
     refetch

@@ -30,8 +30,11 @@ const OpenIssuesPage = () => {
 
   const { issues, loading, error, refetch } = useOpenIssues();
 
+  // Ensure issues is always an array to prevent filter errors
+  const safeIssues = issues || [];
+
   // Filter issues based on search and filters
-  const filteredIssues = issues.filter(issue => {
+  const filteredIssues = safeIssues.filter(issue => {
     const matchesSearch = !searchTerm || 
       issue.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       issue.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,9 +48,9 @@ const OpenIssuesPage = () => {
   });
 
   // Get unique values for filters
-  const languages = [...new Set(issues.map(issue => issue.language))];
-  const difficulties = [...new Set(issues.map(issue => issue.difficulty))];
-  const allLabels = [...new Set(issues.flatMap(issue => issue.labels))];
+  const languages = [...new Set(safeIssues.map(issue => issue.language))];
+  const difficulties = [...new Set(safeIssues.map(issue => issue.difficulty))];
+  const allLabels = [...new Set(safeIssues.flatMap(issue => issue.labels))];
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
