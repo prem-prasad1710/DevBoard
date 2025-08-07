@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test AI Mentor Streaming</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .chat-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .message {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            margin-left: 20%;
+        }
+        .ai-message {
+            background-color: #f8f9fa;
+            color: #333;
+            margin-right: 20%;
+            border-left: 4px solid #007bff;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #666;
+            font-style: italic;
+        }
+        .typing-dots {
+            display: flex;
+            gap: 2px;
+        }
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #007bff;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        .dot:nth-child(3) { animation-delay: 0s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        .cursor {
+            display: inline-block;
+            background: #333;
+            width: 2px;
+            height: 20px;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2>AI Mentor Streaming Test</h2>
+        <div id="messages"></div>
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="Ask your AI mentor anything..." />
+            <button onclick="sendMessage()" id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        
+        let isLoading = false;
+        
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !isLoading) {
+                sendMessage();
+            }
+        });
+        
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || isLoading) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            messageInput.value = '';
+            isLoading = true;
+            sendButton.disabled = true;
+            
+            // Add AI message container with typing indicator
+            const aiMessageDiv = addMessage('', 'ai');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.innerHTML = `
+                AI Mentor is typing
+                <div class="typing-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            `;
+            aiMessageDiv.appendChild(typingDiv);
+            
+            try {
+                // Test the streaming API
+                const response = await fetch('/api/ai-mentor-stream', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversationHistory: []
+                    }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to get AI response');
+                }
+                
+                // Remove typing indicator
+                aiMessageDiv.removeChild(typingDiv);
+                
+                const reader = response.body?.getReader();
+                const decoder = new TextDecoder();
+                let accumulatedContent = '';
+                
+                if (reader) {
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value, { stream: true });
+                        accumulatedContent += chunk;
+                        
+                        // Update the message with streaming content
+                        aiMessageDiv.innerHTML = accumulatedContent + '<span class="cursor"></span>';
+                        
+                        // Scroll to bottom
+                        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                    }
+                    
+                    // Remove cursor when done
+                    aiMessageDiv.innerHTML = accumulatedContent;
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                aiMessageDiv.innerHTML = 'Sorry, I encountered an error. Please try again.';
+            } finally {
+                isLoading = false;
+                sendButton.disabled = false;
+            }
+        }
+        
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.innerHTML = content;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            return messageDiv;
+        }
+        
+        // Test message on load
+        window.onload = function() {
+            addMessage("Hi! I'm your AI Mentor. Ask me anything about coding, algorithms, or development!", 'ai');
+        };
+    </script>
+</body>
+</html>

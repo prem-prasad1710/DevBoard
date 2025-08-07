@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
@@ -30,6 +30,7 @@ import { useTheme } from 'next-themes';
 
 interface LayoutProps {
   children: React.ReactNode;
+  onOpenSidebar?: () => void;
 }
 
 const navigation = [
@@ -45,10 +46,18 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, onOpenSidebar }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [navbarCollapsed, setNavbarCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
   const router = useRouter();
+
+  // Pass the setSidebarOpen function to the parent component
+  useEffect(() => {
+    if (onOpenSidebar) {
+      (window as any).openSidebar = () => setSidebarOpen(true);
+    }
+  }, [onOpenSidebar]);
 
   const toggleTheme = () => {
     if (theme === 'light') {
@@ -71,8 +80,16 @@ export default function Layout({ children }: LayoutProps) {
     }
   };
 
+  // Hide navbar on homepage
+  const isHomePage = router.pathname === '/';
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Sidebar backdrop for homepage */}
+      {isHomePage && sidebarOpen && (
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-25" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" aria-hidden="true">
@@ -119,131 +136,190 @@ export default function Layout({ children }: LayoutProps) {
       )}
 
       {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800 px-6 pb-4">
-          <div className="flex h-16 shrink-0 items-center">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">DevBoard</h1>
-            <Badge variant="secondary" className="ml-2">Beta</Badge>
-          </div>
-          
-          <nav className="flex flex-1 flex-col">
-            <ul role="list" className="flex flex-1 flex-col gap-y-7">
-              <li>
-                <ul role="list" className="-mx-2 space-y-1">
-                  {navigation.map((item) => {
-                    const isActive = router.pathname === item.href;
-                    return (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          className={cn(
-                            'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
-                            isActive
-                              ? 'bg-primary text-primary-foreground'
-                              : 'text-gray-700 hover:text-primary hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
-                          )}
-                        >
-                          <item.icon className="h-5 w-5 shrink-0" />
-                          {item.name}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </li>
-              
-              <li className="mt-auto">
-                <div className="flex items-center gap-x-4 px-2 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-white">
-                  <div className="h-8 w-8 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
-                    <User className="h-4 w-4" />
-                  </div>
-                  <span className="sr-only">Your profile</span>
-                  <span aria-hidden="true">Profile</span>
-                </div>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="lg:pl-72">
-        {/* Top bar */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-          <button
-            type="button"
-            className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <span className="sr-only">Open sidebar</span>
-            <Menu className="h-6 w-6" aria-hidden="true" />
-          </button>
-
-          {/* Separator */}
-          <div className="h-6 w-px bg-gray-200 dark:bg-gray-800 lg:hidden" aria-hidden="true" />
-
-          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <div className="relative flex flex-1 items-center">
-              <Search className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400" />
-              <input
-                className="block h-full w-full border-0 py-0 pl-8 pr-0 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-0 sm:text-sm bg-transparent"
-                placeholder="Search..."
-                type="search"
-              />
+      {(!isHomePage || sidebarOpen) && (
+        <div className={`${isHomePage ? 'fixed' : 'hidden lg:fixed'} lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300 ${
+          navbarCollapsed ? 'lg:w-16' : 'lg:w-72'
+        } ${isHomePage ? 'inset-y-0 z-50 flex flex-col w-72' : ''}`}>
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800 px-6 pb-4">
+            <div className="flex h-16 shrink-0 items-center justify-between">
+              <div className={`flex items-center ${navbarCollapsed && !isHomePage ? 'justify-center' : ''}`}>
+                {(!navbarCollapsed || isHomePage) && (
+                  <>
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">DevBoard</h1>
+                    <Badge variant="secondary" className="ml-2">Beta</Badge>
+                  </>
+                )}
+                {navbarCollapsed && !isHomePage && (
+                  <div className="text-xl font-bold text-gray-900 dark:text-white">D</div>
+                )}
+              </div>
+              {!isHomePage && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setNavbarCollapsed(!navbarCollapsed)}
+                  className="h-8 w-8 p-0"
+                >
+                  <Menu className="h-4 w-4" />
+                </Button>
+              )}
+              {isHomePage && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarOpen(false)}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
             
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-                className="h-8 w-8 p-0"
-              >
-                {getThemeIcon()}
-              </Button>
-              
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Bell className="h-4 w-4" />
-              </Button>
-              
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Plus className="h-4 w-4" />
-              </Button>
-
-              {/* Separator */}
-              <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200 dark:lg:bg-gray-800" aria-hidden="true" />
-
-              {/* Profile dropdown */}
-              <div className="relative">
-                <button
-                  type="button"
-                  className="-m-1.5 flex items-center p-1.5"
-                  id="user-menu-button"
-                  aria-expanded="false"
-                  aria-haspopup="true"
-                >
-                  <span className="sr-only">Open user menu</span>
-                  <div className="h-8 w-8 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
-                    <User className="h-4 w-4" />
+            <nav className="flex flex-1 flex-col">
+              <ul role="list" className="flex flex-1 flex-col gap-y-7">
+                <li>
+                  <ul role="list" className="-mx-2 space-y-1">
+                    {navigation.map((item) => {
+                      const isActive = router.pathname === item.href;
+                      return (
+                        <li key={item.name}>
+                          <Link
+                            href={item.href}
+                            className={cn(
+                              'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold',
+                              isActive
+                                ? 'bg-primary text-primary-foreground'
+                                : 'text-gray-700 hover:text-primary hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white',
+                              navbarCollapsed && !isHomePage ? 'justify-center' : ''
+                            )}
+                            title={navbarCollapsed && !isHomePage ? item.name : undefined}
+                            onClick={isHomePage ? () => setSidebarOpen(false) : undefined}
+                          >
+                            <item.icon className="h-5 w-5 shrink-0" />
+                            {(!navbarCollapsed || isHomePage) && item.name}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </li>
+                
+                <li className="mt-auto">
+                  <div className={`flex items-center gap-x-4 px-2 py-3 text-sm font-semibold leading-6 text-gray-900 dark:text-white ${
+                    navbarCollapsed && !isHomePage ? 'justify-center' : ''
+                  }`}>
+                    <div className="h-8 w-8 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+                      <User className="h-4 w-4" />
+                    </div>
+                    {(!navbarCollapsed || isHomePage) && (
+                      <>
+                        <span className="sr-only">Your profile</span>
+                        <span aria-hidden="true">Profile</span>
+                      </>
+                    )}
                   </div>
-                  <span className="hidden lg:flex lg:items-center">
-                    <span className="ml-4 text-sm font-semibold leading-6 text-gray-900 dark:text-white" aria-hidden="true">
-                      Developer
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Main content */}
+      <div className={`${!isHomePage ? (navbarCollapsed ? 'lg:pl-16' : 'lg:pl-72') : ''}`}>
+        {/* Top bar - only show on non-homepage */}
+        {!isHomePage && (
+          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+            <button
+              type="button"
+              className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <span className="sr-only">Open sidebar</span>
+              <Menu className="h-6 w-6" aria-hidden="true" />
+            </button>
+
+            {/* Separator */}
+            <div className="h-6 w-px bg-gray-200 dark:bg-gray-800 lg:hidden" aria-hidden="true" />
+
+            <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+              <div className="relative flex flex-1 items-center">
+                <Search className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400" />
+                <input
+                  className="block h-full w-full border-0 py-0 pl-8 pr-0 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-0 sm:text-sm bg-transparent"
+                  placeholder="Search..."
+                  type="search"
+                />
+              </div>
+              
+              <div className="flex items-center gap-x-4 lg:gap-x-6">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleTheme}
+                  className="h-8 w-8 p-0"
+                >
+                  {getThemeIcon()}
+                </Button>
+                
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Bell className="h-4 w-4" />
+                </Button>
+                
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+
+                {/* Separator */}
+                <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200 dark:lg:bg-gray-800" aria-hidden="true" />
+
+                {/* Profile dropdown */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="-m-1.5 flex items-center p-1.5"
+                    id="user-menu-button"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                  >
+                    <span className="sr-only">Open user menu</span>
+                    <div className="h-8 w-8 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
+                      <User className="h-4 w-4" />
+                    </div>
+                    <span className="hidden lg:flex lg:items-center">
+                      <span className="ml-4 text-sm font-semibold leading-6 text-gray-900 dark:text-white" aria-hidden="true">
+                        Developer
+                      </span>
                     </span>
-                  </span>
-                </button>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Main content area */}
-        <main className="py-6">
-          <div className="px-4 sm:px-6 lg:px-8">
+        <main className={isHomePage ? '' : 'py-6'}>
+          <div className={isHomePage ? '' : 'px-4 sm:px-6 lg:px-8'}>
             {children}
           </div>
         </main>
       </div>
+
+      {/* Floating navigation toggle for homepage */}
+      {isHomePage && !sidebarOpen && (
+        <div className="fixed top-6 left-6 z-50">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setSidebarOpen(true)}
+            className="shadow-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            <Menu className="h-4 w-4 mr-2" />
+            Dashboard
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
