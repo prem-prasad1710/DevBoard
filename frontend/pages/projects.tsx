@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Target, 
@@ -108,6 +108,7 @@ const ProjectsPage = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
+  const [isClient, setIsClient] = useState(false);
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
@@ -119,6 +120,19 @@ const ProjectsPage = () => {
   });
 
   const { projects, loading, error, createProject, updateProject, deleteProject } = useProjectsMock();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
 
   const handleCreateProject = async () => {
     if (!newProject.name.trim() || !newProject.description.trim()) {
@@ -565,11 +579,7 @@ const ProjectsPage = () => {
                     <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-1" />
-                        Updated {new Date(project.updatedAt).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'short', 
-                          day: 'numeric' 
-                        })}
+                        Updated {isClient ? formatDate(project.updatedAt) : ''}
                       </div>
                       <div className="text-sm font-medium text-card-foreground">
                         {project.progress}% complete

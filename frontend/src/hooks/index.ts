@@ -29,7 +29,8 @@ import {
   DashboardStats, 
   RecentActivity, 
   User, 
-  GitHubActivity, 
+  GitHubActivity,
+  GitHubProfile, 
   StackOverflowActivity,
   StackOverflowProfile,
   JournalEntry,
@@ -127,6 +128,181 @@ export const useGitHub = () => {
   return {
     connectToGitHub,
     syncData
+  };
+};
+
+// GitHub Activities Hook (Mock Implementation)
+export const useGitHubActivities = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  // Mock data for GitHub activities
+  const mockActivities: GitHubActivity[] = [
+    {
+      id: '1',
+      type: 'push',
+      repository: 'DevBoard',
+      branch: 'main',
+      commitMessage: 'Add Stack Overflow page implementation',
+      additions: 245,
+      deletions: 12,
+      createdAt: new Date('2024-08-07T10:30:00Z'),
+      metadata: { files: 3, commitsCount: 2 }
+    },
+    {
+      id: '2',
+      type: 'pull_request',
+      repository: 'react-components',
+      branch: 'feature/dark-mode',
+      commitMessage: 'Implement dark mode toggle functionality',
+      additions: 89,
+      deletions: 15,
+      createdAt: new Date('2024-08-06T15:45:00Z'),
+      metadata: { status: 'merged', reviewers: 2 }
+    },
+    {
+      id: '3',
+      type: 'push',
+      repository: 'api-server',
+      branch: 'develop',
+      commitMessage: 'Fix authentication middleware bug',
+      additions: 23,
+      deletions: 8,
+      createdAt: new Date('2024-08-05T09:20:00Z'),
+      metadata: { files: 2, commitsCount: 1 }
+    },
+    {
+      id: '4',
+      type: 'create',
+      repository: 'portfolio-website',
+      branch: 'main',
+      commitMessage: 'Initial commit - Setup Next.js project',
+      additions: 156,
+      deletions: 0,
+      createdAt: new Date('2024-08-04T14:10:00Z'),
+      metadata: { type: 'repository' }
+    },
+    {
+      id: '5',
+      type: 'pull_request',
+      repository: 'data-visualization',
+      branch: 'feature/charts',
+      commitMessage: 'Add interactive chart components',
+      additions: 334,
+      deletions: 45,
+      createdAt: new Date('2024-08-03T11:30:00Z'),
+      metadata: { status: 'open', reviewers: 1 }
+    },
+    {
+      id: '6',
+      type: 'push',
+      repository: 'mobile-app',
+      branch: 'feature/notifications',
+      commitMessage: 'Implement push notification system',
+      additions: 178,
+      deletions: 22,
+      createdAt: new Date('2024-08-02T16:45:00Z'),
+      metadata: { files: 4, commitsCount: 3 }
+    }
+  ];
+
+  const mockProfile: GitHubProfile = {
+    id: 'user123',
+    username: 'prem-prasad1710',
+    avatarUrl: 'https://github.com/prem-prasad1710.png',
+    isConnected: true,
+    stats: {
+      totalCommits: 1247,
+      totalRepos: 23,
+      totalStars: 156,
+      totalPullRequests: 89
+    }
+  };
+
+  const mockRepositories = [
+    {
+      id: 'repo1',
+      name: 'DevBoard',
+      description: 'Personal developer dashboard for tracking GitHub activity and Stack Overflow contributions',
+      language: 'TypeScript',
+      stars: 45,
+      forks: 12,
+      isPrivate: false,
+      updatedAt: new Date('2024-08-07T10:30:00Z'),
+      url: 'https://github.com/prem-prasad1710/DevBoard'
+    },
+    {
+      id: 'repo2',
+      name: 'react-components',
+      description: 'Reusable React components library with TypeScript support',
+      language: 'JavaScript',
+      stars: 23,
+      forks: 7,
+      isPrivate: false,
+      updatedAt: new Date('2024-08-06T15:45:00Z'),
+      url: 'https://github.com/prem-prasad1710/react-components'
+    },
+    {
+      id: 'repo3',
+      name: 'api-server',
+      description: 'RESTful API server built with Node.js and Express',
+      language: 'JavaScript',
+      stars: 18,
+      forks: 5,
+      isPrivate: false,
+      updatedAt: new Date('2024-08-05T09:20:00Z'),
+      url: 'https://github.com/prem-prasad1710/api-server'
+    },
+    {
+      id: 'repo4',
+      name: 'portfolio-website',
+      description: 'Personal portfolio website built with Next.js',
+      language: 'TypeScript',
+      stars: 8,
+      forks: 2,
+      isPrivate: false,
+      updatedAt: new Date('2024-08-04T14:10:00Z'),
+      url: 'https://github.com/prem-prasad1710/portfolio-website'
+    },
+    {
+      id: 'repo5',
+      name: 'data-visualization',
+      description: 'Interactive data visualization dashboard using D3.js',
+      language: 'JavaScript',
+      stars: 31,
+      forks: 9,
+      isPrivate: false,
+      updatedAt: new Date('2024-08-03T11:30:00Z'),
+      url: 'https://github.com/prem-prasad1710/data-visualization'
+    },
+    {
+      id: 'repo6',
+      name: 'mobile-app',
+      description: 'Cross-platform mobile app built with React Native',
+      language: 'TypeScript',
+      stars: 14,
+      forks: 3,
+      isPrivate: true,
+      updatedAt: new Date('2024-08-02T16:45:00Z'),
+      url: 'https://github.com/prem-prasad1710/mobile-app'
+    }
+  ];
+
+  const refetch = useCallback(() => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  return {
+    activities: mockActivities,
+    profile: mockProfile,
+    repositories: mockRepositories,
+    loading,
+    error,
+    refetch
   };
 };
 
@@ -744,13 +920,212 @@ export const useCodeChallenges = () => {
 
 // Resume Hook
 export const useResume = () => {
-  const { data, loading, error, refetch } = useQuery(GET_RESUME);
+  const [resume, setResume] = useState<Resume | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Simulate API call
+    const loadResume = async () => {
+      try {
+        setLoading(true);
+        // Simulate delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const mockResume: Resume = {
+          id: '1',
+          personalInfo: {
+            fullName: 'John Doe',
+            email: 'john.doe@example.com',
+            phone: '+1 (555) 123-4567',
+            location: 'San Francisco, CA',
+            website: 'https://johndoe.dev',
+            linkedin: 'https://linkedin.com/in/johndoe',
+            github: 'https://github.com/johndoe',
+            summary: 'Passionate Full Stack Developer with 5+ years of experience building scalable web applications using modern technologies. Expertise in React, Node.js, TypeScript, and cloud platforms. Strong advocate for clean code, test-driven development, and agile methodologies.'
+          },
+          experience: [
+            {
+              id: '1',
+              company: 'TechCorp Inc.',
+              position: 'Senior Software Engineer',
+              startDate: new Date('2022-01-01'),
+              endDate: undefined,
+              current: true,
+              description: 'Lead development of customer-facing web applications serving 100K+ users. Architected microservices infrastructure and implemented CI/CD pipelines.',
+              achievements: [
+                'Improved application performance by 40% through code optimization',
+                'Led a team of 4 developers in agile environment',
+                'Implemented automated testing reducing bugs by 60%'
+              ],
+              technologies: ['React', 'TypeScript', 'Node.js', 'AWS', 'Docker', 'PostgreSQL']
+            },
+            {
+              id: '2',
+              company: 'StartupXYZ',
+              position: 'Full Stack Developer',
+              startDate: new Date('2020-03-01'),
+              endDate: new Date('2021-12-31'),
+              current: false,
+              description: 'Developed and maintained e-commerce platform from concept to production. Collaborated with design and product teams to deliver user-centric solutions.',
+              achievements: [
+                'Built responsive e-commerce platform handling 10K+ transactions',
+                'Integrated payment systems and third-party APIs',
+                'Mentored junior developers and conducted code reviews'
+              ],
+              technologies: ['React', 'Node.js', 'MongoDB', 'Express', 'Stripe API', 'Jest']
+            },
+            {
+              id: '3',
+              company: 'WebDev Agency',
+              position: 'Frontend Developer',
+              startDate: new Date('2019-06-01'),
+              endDate: new Date('2020-02-28'),
+              current: false,
+              description: 'Created responsive websites and web applications for various clients. Focused on performance optimization and cross-browser compatibility.',
+              achievements: [
+                'Delivered 15+ client projects on time and within budget',
+                'Improved website loading speeds by average of 50%',
+                'Implemented modern JavaScript frameworks and build tools'
+              ],
+              technologies: ['JavaScript', 'React', 'Vue.js', 'Sass', 'Webpack', 'Git']
+            }
+          ],
+          education: [
+            {
+              id: '1',
+              institution: 'University of California, Berkeley',
+              degree: 'Bachelor of Science',
+              field: 'Computer Science',
+              startDate: new Date('2015-09-01'),
+              endDate: new Date('2019-05-15'),
+              gpa: 3.8,
+              achievements: [
+                'Magna Cum Laude',
+                'Dean\'s List (6 semesters)',
+                'Computer Science Student of the Year 2019'
+              ]
+            }
+          ],
+          skills: [
+            {
+              category: 'Frontend Development',
+              items: ['React', 'TypeScript', 'Next.js', 'Vue.js', 'HTML5', 'CSS3', 'Tailwind CSS'],
+              proficiencyLevel: 'expert'
+            },
+            {
+              category: 'Backend Development',
+              items: ['Node.js', 'Express', 'Python', 'Django', 'PostgreSQL', 'MongoDB'],
+              proficiencyLevel: 'advanced'
+            },
+            {
+              category: 'DevOps & Cloud',
+              items: ['AWS', 'Docker', 'Kubernetes', 'CI/CD', 'GitHub Actions'],
+              proficiencyLevel: 'intermediate'
+            },
+            {
+              category: 'Tools & Others',
+              items: ['Git', 'Jest', 'Cypress', 'Figma', 'Jira', 'Agile/Scrum'],
+              proficiencyLevel: 'advanced'
+            }
+          ],
+          projects: [
+            {
+              id: '1',
+              name: 'E-Commerce Platform',
+              description: 'Full-stack e-commerce solution with payment processing, inventory management, and admin dashboard.',
+              technologies: ['React', 'Node.js', 'PostgreSQL', 'Stripe'],
+              url: 'https://demo-ecommerce.com',
+              githubUrl: 'https://github.com/johndoe/ecommerce-platform',
+              highlights: [
+                'Built from scratch with modern tech stack',
+                'Handles 10K+ products and user accounts',
+                'Integrated payment gateway and shipping APIs'
+              ]
+            },
+            {
+              id: '2',
+              name: 'Task Management App',
+              description: 'Collaborative project management tool with real-time updates, file sharing, and team communication.',
+              technologies: ['React', 'Socket.io', 'Express', 'MongoDB'],
+              url: 'https://taskflow-app.com',
+              githubUrl: 'https://github.com/johndoe/taskflow',
+              highlights: [
+                'Real-time collaboration features',
+                'Drag-and-drop interface',
+                'File upload and sharing system'
+              ]
+            }
+          ],
+          certifications: [
+            {
+              id: '1',
+              name: 'AWS Certified Solutions Architect',
+              issuer: 'Amazon Web Services',
+              date: new Date('2023-03-15'),
+              expiryDate: new Date('2026-03-15'),
+              url: 'https://aws.amazon.com/certification/'
+            },
+            {
+              id: '2',
+              name: 'React Developer Certification',
+              issuer: 'Meta',
+              date: new Date('2022-08-20'),
+              expiryDate: undefined,
+              url: 'https://developers.facebook.com/docs/react/'
+            }
+          ],
+          languages: [
+            {
+              language: 'English',
+              proficiency: 'native'
+            },
+            {
+              language: 'Spanish',
+              proficiency: 'conversational'
+            },
+            {
+              language: 'French',
+              proficiency: 'basic'
+            }
+          ],
+          createdAt: new Date('2023-01-01'),
+          updatedAt: new Date()
+        };
+
+        setResume(mockResume);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load resume');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadResume();
+  }, []);
+
+  const refetch = () => {
+    setLoading(true);
+    setError(null);
+    // Simulate refetch
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
+  };
+
+  const updateResume = (updatedResume: Partial<Resume>) => {
+    if (resume) {
+      setResume({ ...resume, ...updatedResume });
+    }
+  };
 
   return {
-    resume: data?.resume as Resume,
+    resume,
     loading,
     error,
-    refetch
+    refetch,
+    updateResume
   };
 };
 

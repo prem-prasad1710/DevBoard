@@ -82,6 +82,15 @@ const StackOverflowPage = () => {
     return num.toString();
   };
 
+  const formatDate = (date: Date) => {
+    // Use a consistent format to prevent hydration errors
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto">
@@ -242,7 +251,7 @@ const StackOverflowPage = () => {
                       </span>
                       <div className="flex items-center ml-4 text-sm text-muted-foreground">
                         {isClient && <Calendar className="h-4 w-4 mr-1" />}
-                        {activity.createdAt.toLocaleDateString()}
+                        {isClient ? formatDate(activity.createdAt) : ''}
                       </div>
                     </div>
                     <h3 className="text-lg font-semibold text-card-foreground hover:text-primary cursor-pointer">

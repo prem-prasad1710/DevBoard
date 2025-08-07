@@ -27,11 +27,24 @@ const OpenIssuesPage = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [selectedLabel, setSelectedLabel] = useState('');
+  const [isClient, setIsClient] = useState(false);
 
   const { issues, loading, error, refetch } = useOpenIssues();
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Ensure issues is always an array to prevent filter errors
   const safeIssues = issues || [];
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
   // Filter issues based on search and filters
   const filteredIssues = safeIssues.filter(issue => {
@@ -209,7 +222,7 @@ const OpenIssuesPage = () => {
                           <Code className="h-4 w-4 mr-1" />
                           <span className="mr-4">{issue.repository}</span>
                           <Calendar className="h-4 w-4 mr-1" />
-                          <span>{new Date(issue.createdAt).toLocaleDateString()}</span>
+                          <span>{isClient ? formatDate(issue.createdAt) : ''}</span>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2 ml-4">
@@ -250,7 +263,7 @@ const OpenIssuesPage = () => {
                         </div>
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 mr-1" />
-                          <span>{new Date(issue.createdAt).toLocaleDateString()}</span>
+                          <span>{isClient ? formatDate(issue.createdAt) : ''}</span>
                         </div>
                         <div className="flex items-center">
                           <Code className="h-4 w-4 mr-1" />

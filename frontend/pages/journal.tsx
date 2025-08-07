@@ -95,6 +95,7 @@ const JournalPage = () => {
   const [selectedTag, setSelectedTag] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [editingEntry, setEditingEntry] = useState<any>(null);
+  const [isClient, setIsClient] = useState(false);
   const [newEntry, setNewEntry] = useState({
     title: '',
     content: '',
@@ -117,6 +118,19 @@ const JournalPage = () => {
     isUpdating: isUpdatingEntry,
     isDeleting: isDeletingEntry
   } = useJournalEntriesMock();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
   const handleCreateEntry = async () => {
     if (!newEntry.title.trim() || !newEntry.content.trim()) {
@@ -397,7 +411,7 @@ const JournalPage = () => {
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{entry.title}</h3>
                       <div className="flex items-center text-sm text-gray-500 mb-3">
                         <Clock className="h-4 w-4 mr-1" />
-                        {new Date(entry.createdAt).toLocaleDateString()}
+                        {isClient ? formatDate(entry.createdAt) : ''}
                         {entry.isPrivate && (
                           <span className="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
                             Private
