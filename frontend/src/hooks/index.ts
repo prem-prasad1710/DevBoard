@@ -31,6 +31,7 @@ import {
   User, 
   GitHubActivity, 
   StackOverflowActivity,
+  StackOverflowProfile,
   JournalEntry,
   JournalEntryInput,
   Project,
@@ -168,6 +169,115 @@ export const useStackOverflow = () => {
   return {
     connectToStackOverflow,
     syncData
+  };
+};
+
+// Stack Overflow Activities Hook (Mock Implementation)
+export const useStackOverflowActivities = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  // Mock data for Stack Overflow activities
+  const mockActivities: StackOverflowActivity[] = [
+    {
+      id: '1',
+      type: 'question',
+      title: 'How to optimize React component re-renders with useMemo?',
+      tags: ['react', 'performance', 'usememo', 'optimization'],
+      score: 15,
+      viewCount: 1250,
+      answerCount: 3,
+      createdAt: new Date('2024-01-15T10:30:00Z'),
+      url: 'https://stackoverflow.com/questions/1/react-usememo-optimization'
+    },
+    {
+      id: '2',
+      type: 'answer',
+      title: 'Why is my async/await not working properly in JavaScript?',
+      tags: ['javascript', 'async-await', 'promises'],
+      score: 8,
+      viewCount: 890,
+      answerCount: 0,
+      createdAt: new Date('2024-01-14T15:45:00Z'),
+      url: 'https://stackoverflow.com/questions/2/async-await-javascript/answer/2'
+    },
+    {
+      id: '3',
+      type: 'question',
+      title: 'TypeScript generic constraints with conditional types',
+      tags: ['typescript', 'generics', 'conditional-types'],
+      score: 22,
+      viewCount: 2100,
+      answerCount: 5,
+      createdAt: new Date('2024-01-13T09:20:00Z'),
+      url: 'https://stackoverflow.com/questions/3/typescript-generic-constraints'
+    },
+    {
+      id: '4',
+      type: 'answer',
+      title: 'Best practices for error handling in Node.js Express applications',
+      tags: ['node.js', 'express', 'error-handling'],
+      score: 12,
+      viewCount: 750,
+      answerCount: 0,
+      createdAt: new Date('2024-01-12T14:10:00Z'),
+      url: 'https://stackoverflow.com/questions/4/nodejs-error-handling/answer/4'
+    },
+    {
+      id: '5',
+      type: 'question',
+      title: 'MongoDB aggregation pipeline performance optimization',
+      tags: ['mongodb', 'aggregation', 'performance'],
+      score: 18,
+      viewCount: 1567,
+      answerCount: 2,
+      createdAt: new Date('2024-01-11T11:30:00Z'),
+      url: 'https://stackoverflow.com/questions/5/mongodb-aggregation-performance'
+    },
+    {
+      id: '6',
+      type: 'answer',
+      title: 'How to properly test React hooks with Jest and React Testing Library',
+      tags: ['react', 'testing', 'jest', 'react-testing-library'],
+      score: 25,
+      viewCount: 3200,
+      answerCount: 0,
+      createdAt: new Date('2024-01-10T16:45:00Z'),
+      url: 'https://stackoverflow.com/questions/6/react-hooks-testing/answer/6'
+    }
+  ];
+
+  const mockProfile: StackOverflowProfile = {
+    id: 'user123',
+    username: 'developer_pro',
+    reputation: 2547,
+    isConnected: true,
+    stats: {
+      totalQuestions: 15,
+      totalAnswers: 42,
+      totalViews: 18750,
+      badgeCounts: {
+        gold: 2,
+        silver: 8,
+        bronze: 25
+      }
+    }
+  };
+
+  const refetch = useCallback(() => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  return {
+    activities: mockActivities,
+    profile: mockProfile,
+    loading,
+    error,
+    refetch
   };
 };
 
