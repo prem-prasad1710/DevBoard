@@ -6,7 +6,7 @@ import Head from 'next/head';
 import client from '@/lib/apollo-client';
 import { AuthProvider } from '@/contexts/AuthContext';
 import '../styles/globals.css';
-
+import { Analytics } from "@vercel/analytics/next";
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
@@ -36,7 +36,7 @@ export default function App({ Component, pageProps }: AppProps) {
                   border: '1px solid var(--border)',
                 },
               }}
-            />
+            /> <Analytics />
           </ThemeProvider>
         </AuthProvider>
       </ApolloProvider>

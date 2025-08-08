@@ -18,9 +18,11 @@ const nextConfig = {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
   async rewrites() {
+    // Only proxy API routes to backend if it's available
+    // Exclude NextAuth routes from proxying
     return [
       {
-        source: '/api/:path*',
+        source: '/api/backend/:path*',
         destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/:path*`,
       },
     ];

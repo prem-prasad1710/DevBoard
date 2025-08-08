@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Dynamically import all icons to prevent hydration issues
 const LayoutDashboard = dynamic(() => import('lucide-react').then(mod => ({ default: mod.LayoutDashboard })), { ssr: false });
@@ -50,6 +51,7 @@ export default function Layout({ children, onOpenSidebar }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [navbarCollapsed, setNavbarCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
   // Pass the setSidebarOpen function to the parent component
@@ -214,7 +216,7 @@ export default function Layout({ children, onOpenSidebar }: LayoutProps) {
                     {(!navbarCollapsed || isHomePage) && (
                       <>
                         <span className="sr-only">Your profile</span>
-                        <span aria-hidden="true">Profile</span>
+                        <span aria-hidden="true">{user?.name || 'Developer'}</span>
                       </>
                     )}
                   </div>
@@ -281,6 +283,8 @@ export default function Layout({ children, onOpenSidebar }: LayoutProps) {
                     id="user-menu-button"
                     aria-expanded="false"
                     aria-haspopup="true"
+                    onClick={logout}
+                    title="Sign out"
                   >
                     <span className="sr-only">Open user menu</span>
                     <div className="h-8 w-8 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center">
@@ -288,7 +292,7 @@ export default function Layout({ children, onOpenSidebar }: LayoutProps) {
                     </div>
                     <span className="hidden lg:flex lg:items-center">
                       <span className="ml-4 text-sm font-semibold leading-6 text-gray-900 dark:text-white" aria-hidden="true">
-                        Developer
+                        {user?.name || 'Developer'}
                       </span>
                     </span>
                   </button>

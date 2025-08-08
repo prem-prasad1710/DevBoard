@@ -22,6 +22,7 @@ const Sun = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Sun
 const Moon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Moon })), { ssr: false });
 
 import { useCodeChallenges } from '@/hooks';
+import { color } from 'html2canvas/dist/types/css/types/color';
 
 const CodeChallengesPage = () => {
   const router = useRouter();
@@ -149,8 +150,8 @@ const CodeChallengesPage = () => {
               <Code className="h-6 w-6 text-indigo-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Code Challenges</h1>
-              <p className="text-gray-600">Practice and improve your coding skills</p>
+              <h1 className={`text-2xl font-bold ${isClient && theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Code Challenges</h1>
+              <p className={`${isClient && theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Practice and improve your coding skills</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -186,57 +187,65 @@ const CodeChallengesPage = () => {
         </div>
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className={`${isClient && theme === 'dark' ? 'bg-black border border-gray-300' : 'bg-white'} p-6 rounded-lg shadow-sm`}>
             <div className="flex items-center">
-              <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="h-12 w-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+          <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-300" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">{completedChallenges}</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-300">Completed</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{completedChallenges}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className={`${isClient && theme === 'dark' ? 'bg-black border border-gray-300' : 'bg-white'} p-6 rounded-lg shadow-sm`}>
             <div className="flex items-center">
-              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <BookOpen className="h-6 w-6 text-blue-600" />
+              <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+          <BookOpen className="h-6 w-6 text-blue-600 dark:text-blue-300" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{totalChallenges}</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-300">Total</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalChallenges}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className={`${isClient && theme === 'dark' ? 'bg-black border border-gray-300' : 'bg-white'} p-6 rounded-lg shadow-sm`}>
             <div className="flex items-center">
-              <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Award className="h-6 w-6 text-purple-600" />
+              <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+          <Award className="h-6 w-6 text-purple-600 dark:text-purple-300" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Success Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{completionRate}%</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-300">Success Rate</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{completionRate}%</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className={`${isClient && theme === 'dark' ? 'bg-black border border-gray-300' : 'bg-white'} p-6 rounded-lg shadow-sm`}>
             <div className="flex items-center">
-              <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Star className="h-6 w-6 text-orange-600" />
+              <div className="h-12 w-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+          <Star className="h-6 w-6 text-orange-600 dark:text-orange-300" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Categories</p>
-                <p className="text-2xl font-bold text-gray-900">{categories.length}</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-300">Categories</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{categories.length}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div
+          className={`rounded-lg shadow-sm p-6 mb-6 ${
+            isClient
+              ? theme === 'dark'
+          ? 'bg-black'
+          : 'bg-white'
+              : 'bg-white'
+          }`}
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             {/* Search */}
             <div className="lg:col-span-2">

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -85,20 +87,21 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [isPrivateMode, setIsPrivateMode] = useState(false);
+  const { user, updateUser } = useAuth();
 
   // Sample profile data - in real app this would come from API/database
   const [profileData, setProfileData] = useState<ProfileData>({
-    name: "Prem Prasad",
+    name: user?.name || "Developer",
     title: "Full Stack Developer & AI Enthusiast",
     bio: "Passionate full-stack developer with expertise in modern web technologies. I love building scalable applications and exploring the intersection of AI and web development. Always eager to learn new technologies and solve complex problems.",
-    location: "San Francisco, CA",
-    email: "prem.prasad@example.com",
+    location: user?.location || "San Francisco, CA",
+    email: user?.email || "developer@example.com",
     phone: "+1 (555) 123-4567",
-    website: "https://premprasad.dev",
-    avatar: "/api/placeholder/150/150",
-    github: "https://github.com/premprasad",
-    linkedin: "https://linkedin.com/in/premprasad",
-    twitter: "https://twitter.com/premprasad",
+    website: user?.website || "https://developer.dev",
+    avatar: user?.avatar || "/api/placeholder/150/150",
+    github: user?.provider === 'github' ? `https://github.com/${user.githubUsername || user.email.split('@')[0]}` : "https://github.com/developer",
+    linkedin: "https://linkedin.com/in/developer",
+    twitter: "https://twitter.com/developer",
     skills: [
       { name: "JavaScript", level: 95, category: "Frontend" },
       { name: "TypeScript", level: 90, category: "Frontend" },

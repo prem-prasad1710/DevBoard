@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 
@@ -20,10 +22,21 @@ const Moon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Mo
 const Dashboard = () => {
   const [isClient, setIsClient] = useState(false);
   const [activeConnection, setActiveConnection] = useState<number | null>(null);
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    // Redirect to login if not authenticated
+    if (status === 'loading') return; // Still loading
+    
+    if (!session) {
+      router.push('/auth/login');
+    }
+  }, [session, status, router]);
 
   const handleGetStarted = () => {
     // Open sidebar if available
@@ -136,6 +149,22 @@ const Dashboard = () => {
         return '';
     }
   };
+
+  // Show loading spinner while checking authentication
+  if (status === 'loading') {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Don't render anything if not authenticated (redirect will happen)
+  if (!session) {
+    return null;
+  }
 
   return (
     <Layout onOpenSidebar={handleGetStarted}>
