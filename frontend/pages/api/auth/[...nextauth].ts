@@ -16,11 +16,13 @@ export const authOptions: NextAuthOptions = {
         params: {
           prompt: "consent",
           access_type: "offline",
-          response_type: "code"
+          response_type: "code",
+          scope: "openid email profile"
         }
       },
       httpOptions: {
-        timeout: 10000,
+        timeout: 60000, // Increased timeout to 60 seconds
+        agent: false,
       }
     }),
     CredentialsProvider({
