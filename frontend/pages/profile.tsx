@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Dynamically import icons to prevent hydration issues
 const User = dynamic(() => import('lucide-react').then(mod => ({ default: mod.User })), { ssr: false });
