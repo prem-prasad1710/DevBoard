@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
@@ -135,7 +135,7 @@ const StackOverflowPage = () => {
     });
   };
 
-  const handleUserSearch = async () => {
+  const handleUserSearch = useCallback(async () => {
     if (!userSearchQuery.trim()) return;
     
     try {
@@ -144,9 +144,9 @@ const StackOverflowPage = () => {
     } catch (error) {
       console.error('Error searching users:', error);
     }
-  };
+  }, [userSearchQuery, searchUsers]);
 
-    const handleConnectUser = async (userId: string) => {
+    const handleConnectUser = useCallback(async (userId: string) => {
     setConnectionStatus('connecting');
     setConnectionError('');
     
@@ -171,7 +171,18 @@ const StackOverflowPage = () => {
         setConnectionError('');
       }, 5000);
     }
-  };
+  }, [connectUser]);
+
+  // Memoized handlers to prevent unnecessary re-renders
+  const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserSearchQuery(e.target.value);
+  }, []);
+
+  const handleSearchInputKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleUserSearch();
+    }
+  }, [handleUserSearch]);
 
   // Stack Overflow Connection Component for non-connected users
   const StackOverflowConnectionPrompt = () => (
@@ -225,8 +236,8 @@ const StackOverflowPage = () => {
               placeholder="Enter your Stack Overflow display name..."
               className="flex-1 px-4 py-2 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground"
               value={userSearchQuery}
-              onChange={(e) => setUserSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleUserSearch()}
+              onChange={handleSearchInputChange}
+              onKeyPress={handleSearchInputKeyPress}
               disabled={connectionStatus === 'connecting'}
             />
             <button
