@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useAuth } from '../src/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Github, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 
 const RegisterPage = () => {
@@ -82,13 +82,8 @@ const RegisterPage = () => {
     setIsLoading(true);
 
     try {
-      await register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password
-      });
+      const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+      await register(fullName, formData.email, formData.password);
       router.push('/');
     } catch (error: any) {
       setErrors({ 
