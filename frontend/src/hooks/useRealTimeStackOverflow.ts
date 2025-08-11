@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { useMutation } from '@apollo/client';
+import { UPDATE_PROFILE } from '@/lib/graphql/queries';
 import { 
   stackOverflowAPI, 
   StackOverflowUser, 
@@ -29,7 +31,8 @@ interface UseRealTimeStackOverflowReturn {
 }
 
 export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealTimeStackOverflowReturn => {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
+  const [updateProfile] = useMutation(UPDATE_PROFILE);
   
   // State management
   const [profile, setProfile] = useState<StackOverflowUser | null>(null);
@@ -144,24 +147,57 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
   // Search users function
   const searchUsers = useCallback(async (displayName: string): Promise<StackOverflowUser[]> => {
     try {
-      return await stackOverflowAPI.searchUserByDisplayName(displayName);
+      if (!displayName.trim()) {
+        return [];
+      }
+      
+      const results = await stackOverflowAPI.searchUserByDisplayName(displayName);
+      return results || [];
     } catch (error) {
       console.error('Error searching Stack Overflow users:', error);
+      // Return empty array on error to prevent UI crashes
       return [];
     }
   }, []);
 
-  // Connect user function (for future use with backend integration)
+  // Connect user function - saves Stack Overflow ID to user profile
   const connectUser = useCallback(async (userId: string): Promise<void> => {
     try {
-      // This would typically update the user's profile with Stack Overflow ID
-      // For now, we'll just refetch data
-      await fetchStackOverflowData();
+      setLoading(true);
+      
+      // Update user profile with Stack Overflow ID
+      const result = await updateProfile({
+        variables: {
+          input: {
+            stackoverflowId: userId
+          }
+        }
+      });
+
+      if (result.data?.updateProfile) {
+        // Update the session to reflect the new Stack Overflow connection
+        await update({
+          ...session,
+          user: {
+            ...session?.user,
+            stackoverflowId: userId,
+            stackOverflowId: userId // Also add alternative property name for compatibility
+          }
+        });
+
+        // Give a small delay to ensure session is updated
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Fetch Stack Overflow data with the new user ID
+        await fetchStackOverflowData();
+      }
     } catch (error) {
       console.error('Error connecting Stack Overflow user:', error);
       throw error;
+    } finally {
+      setLoading(false);
     }
-  }, [fetchStackOverflowData]);
+  }, [updateProfile, session, update, fetchStackOverflowData]);
 
   // Fetch data when dependencies change
   useEffect(() => {

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
     "dev:simple": "nodemon --exec ts-node src/dev-server.ts",
+    "dev:standalone": "nodemon --exec ts-node src/standalone-server.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "jest",

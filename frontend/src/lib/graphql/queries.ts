@@ -602,3 +602,21 @@ export const GENERATE_TWEET = gql`
     }
   }
 `;
+
+// Profile Mutations
+export const UPDATE_PROFILE = gql`
+  mutation UpdateProfile($input: UpdateProfileInput!) {
+    updateProfile(input: $input) {
+      id
+      username
+      email
+      githubUsername
+      stackoverflowId
+      bio
+      location
+      website
+      company
+      avatarUrl
+    }
+  }
+`;

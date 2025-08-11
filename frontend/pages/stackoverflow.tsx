@@ -31,6 +31,8 @@ const StackOverflowPage = () => {
   const [isClient, setIsClient] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'connecting' | 'success' | 'error'>('idle');
+  const [connectionError, setConnectionError] = useState<string>('');
 
   const { 
     profile, 
@@ -145,11 +147,27 @@ const StackOverflowPage = () => {
 
   const handleConnectUser = async (userId: string) => {
     try {
+      setConnectionStatus('connecting');
+      setConnectionError('');
+      
       await connectUser(userId);
+      
+      setConnectionStatus('success');
       setSearchResults([]);
       setUserSearchQuery('');
+      
+      // Reset status after 3 seconds
+      setTimeout(() => setConnectionStatus('idle'), 3000);
     } catch (error) {
       console.error('Error connecting user:', error);
+      setConnectionStatus('error');
+      setConnectionError(error instanceof Error ? error.message : 'Failed to connect Stack Overflow account');
+      
+      // Reset error status after 5 seconds
+      setTimeout(() => {
+        setConnectionStatus('idle');
+        setConnectionError('');
+      }, 5000);
     }
   };
 
@@ -207,12 +225,14 @@ const StackOverflowPage = () => {
               value={userSearchQuery}
               onChange={(e) => setUserSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleUserSearch()}
+              disabled={connectionStatus === 'connecting'}
             />
             <button
               onClick={handleUserSearch}
-              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors"
+              disabled={!userSearchQuery.trim() || connectionStatus === 'connecting'}
+              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
             >
-              Search
+              {connectionStatus === 'connecting' ? 'Connecting...' : 'Search'}
             </button>
           </div>
 
@@ -224,7 +244,7 @@ const StackOverflowPage = () => {
                   <div
                     key={user.user_id}
                     className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/50 cursor-pointer border"
-                    onClick={() => handleConnectUser(user.user_id.toString())}
+                    onClick={() => connectionStatus !== 'connecting' && handleConnectUser(user.user_id.toString())}
                   >
                     <div className="flex items-center space-x-3">
                       <img
@@ -239,11 +259,41 @@ const StackOverflowPage = () => {
                         </div>
                       </div>
                     </div>
-                    <button className="px-3 py-1 bg-primary text-primary-foreground text-sm rounded">
-                      Connect
+                    <button 
+                      className={`px-3 py-1 text-sm rounded transition-colors ${
+                        connectionStatus === 'connecting' 
+                          ? 'bg-gray-400 text-white cursor-not-allowed' 
+                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                      }`}
+                      disabled={connectionStatus === 'connecting'}
+                    >
+                      {connectionStatus === 'connecting' ? 'Connecting...' : 'Connect'}
                     </button>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Connection Status Messages */}
+          {connectionStatus === 'success' && (
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+              <div className="flex items-center text-sm">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                <span className="text-green-700 dark:text-green-300 font-medium">
+                  Successfully connected your Stack Overflow account!
+                </span>
+              </div>
+            </div>
+          )}
+
+          {connectionStatus === 'error' && connectionError && (
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
+              <div className="flex items-center text-sm">
+                <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                <span className="text-red-700 dark:text-red-300 font-medium">
+                  {connectionError}
+                </span>
               </div>
             </div>
           )}
