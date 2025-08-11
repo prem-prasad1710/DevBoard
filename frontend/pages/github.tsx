@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import Layout from '@/components/Layout';
-import { useGitHubActivities } from '@/hooks';
+import { useRealTimeGitHub } from '@/hooks';
 
 // Dynamically import icons to prevent hydration issues
 const GitBranch = dynamic(() => import('lucide-react').then(mod => ({ default: mod.GitBranch })), { ssr: false });
@@ -36,14 +36,23 @@ const GitHubPage = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'repositories' | 'activity'>('overview');
   const [isClient, setIsClient] = useState(false);
 
-  const { activities, profile, repositories, loading, error, refetch } = useGitHubActivities();
+  const { 
+    profile, 
+    repositories, 
+    activities, 
+    stats, 
+    loading, 
+    error, 
+    refetch, 
+    isGitHubUser, 
+    canFetch 
+  } = useRealTimeGitHub();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   // Check if user is authenticated with GitHub
-  const isGitHubUser = session?.user && (session as any).provider === 'github';
   const isAuthenticated = status === 'authenticated';
 
   // If user is not authenticated, redirect to login
@@ -60,7 +69,7 @@ const GitHubPage = () => {
   const safeRepositories = repositories || [];
 
   // Filter activities based on search and filters
-  const filteredActivities = safeActivities.filter(activity => {
+  const filteredActivities = activities.filter(activity => {
     const matchesSearch = !searchTerm || 
       activity.repository.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (activity.commitMessage && activity.commitMessage.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -72,17 +81,17 @@ const GitHubPage = () => {
   });
 
   // Filter repositories
-  const filteredRepositories = safeRepositories.filter(repo => {
+  const filteredRepositories = repositories.filter(repo => {
     const matchesSearch = !searchTerm || 
       repo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      repo.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (repo.description && repo.description.toLowerCase().includes(searchTerm.toLowerCase()));
     
     return matchesSearch;
   });
 
   // Get unique values for filters
-  const activityTypes = [...new Set(safeActivities.map(activity => activity.type))];
-  const repositoryNames = [...new Set(safeActivities.map(activity => activity.repository))];
+  const activityTypes = [...new Set(activities.map(activity => activity.type))];
+  const repositoryNames = [...new Set(activities.map(activity => activity.repository))];
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -114,7 +123,9 @@ const GitHubPage = () => {
     }
   };
 
-  const getLanguageColor = (language: string) => {
+  const getLanguageColor = (language: string | null) => {
+    if (!language) return 'bg-gray-500';
+    
     switch (language) {
       case 'TypeScript':
         return 'bg-blue-500';
@@ -291,13 +302,13 @@ const GitHubPage = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <img
-                  src={session?.user?.image || profile?.avatarUrl || '/placeholder-avatar.png'}
-                  alt={session?.user?.name || profile?.username || 'User'}
+                  src={session?.user?.image || profile?.avatar_url || '/placeholder-avatar.png'}
+                  alt={session?.user?.name || profile?.login || 'User'}
                   className="h-16 w-16 rounded-full border-2 border-border mr-4"
                 />
                 <div>
                   <h2 className="text-xl font-semibold text-card-foreground">
-                    {session?.user?.name || profile?.username || 'GitHub User'}
+                    {session?.user?.name || profile?.name || profile?.login || 'GitHub User'}
                   </h2>
                   <div className="flex items-center text-muted-foreground">
                     {isClient && <Github className="h-4 w-4 mr-1" />}
@@ -307,7 +318,7 @@ const GitHubPage = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <a
-                  href={`https://github.com/${(session?.user as any)?.login || profile?.username || ''}`}
+                  href={`https://github.com/${(session?.user as any)?.login || profile?.login || ''}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary hover:text-primary/80"
@@ -321,59 +332,65 @@ const GitHubPage = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-3 bg-background rounded-lg">
                 <div className="text-2xl font-bold text-foreground">
-                  {formatNumber(profile?.stats?.totalCommits || (session?.user as any)?.public_repos || 0)}
+                  {formatNumber(stats?.totalCommits || 0)}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {profile?.stats?.totalCommits ? 'Commits' : 'Public Repos'}
-                </div>
+                <div className="text-sm text-muted-foreground">Commits</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
                 <div className="text-2xl font-bold text-foreground">
-                  {profile?.stats?.totalRepos || (session?.user as any)?.public_repos || 0}
+                  {stats?.totalRepos || profile?.public_repos || 0}
                 </div>
                 <div className="text-sm text-muted-foreground">Repositories</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
                 <div className="text-2xl font-bold text-foreground">
-                  {formatNumber(profile?.stats?.totalStars || 0)}
+                  {formatNumber(stats?.totalStars || 0)}
                 </div>
                 <div className="text-sm text-muted-foreground">Stars</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
                 <div className="text-2xl font-bold text-foreground">
-                  {profile?.stats?.totalPullRequests || (session?.user as any)?.followers || 0}
+                  {stats?.totalFollowers || profile?.followers || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {profile?.stats?.totalPullRequests ? 'Pull Requests' : 'Followers'}
-                </div>
+                <div className="text-sm text-muted-foreground">Followers</div>
               </div>
             </div>
 
             {/* GitHub User Info */}
-            {(session?.user as any)?.login && (
+            {(profile || (session?.user as any)?.login) && (
               <div className="mt-4 p-4 bg-background rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="font-medium text-foreground">Username: </span>
-                    <span className="text-muted-foreground">@{(session.user as any).login}</span>
+                    <span className="text-muted-foreground">@{profile?.login || (session?.user as any)?.login}</span>
                   </div>
-                  {(session.user as any).company && (
+                  {(profile?.company || (session?.user as any)?.company) && (
                     <div>
                       <span className="font-medium text-foreground">Company: </span>
-                      <span className="text-muted-foreground">{(session.user as any).company}</span>
+                      <span className="text-muted-foreground">{profile?.company || (session?.user as any)?.company}</span>
                     </div>
                   )}
-                  {(session.user as any).location && (
+                  {(profile?.location || (session?.user as any)?.location) && (
                     <div>
                       <span className="font-medium text-foreground">Location: </span>
-                      <span className="text-muted-foreground">{(session.user as any).location}</span>
+                      <span className="text-muted-foreground">{profile?.location || (session?.user as any)?.location}</span>
                     </div>
                   )}
                 </div>
-                {(session.user as any).bio && (
+                {(profile?.bio || (session?.user as any)?.bio) && (
                   <div className="mt-3">
                     <span className="font-medium text-foreground">Bio: </span>
-                    <span className="text-muted-foreground">{(session.user as any).bio}</span>
+                    <span className="text-muted-foreground">{profile?.bio || (session?.user as any)?.bio}</span>
+                  </div>
+                )}
+                {canFetch && (
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="text-xs text-muted-foreground">
+                      Last updated: {new Date().toLocaleString()}
+                    </div>
+                    <div className="text-xs text-green-600 font-medium">
+                      Real-time data from GitHub API
+                    </div>
                   </div>
                 )}
               </div>
@@ -450,7 +467,7 @@ const GitHubPage = () => {
             <div className="bg-card rounded-lg shadow-sm border p-6">
               <h3 className="text-lg font-semibold text-card-foreground mb-4">Recent Activity</h3>
               <div className="space-y-3">
-                {safeActivities.slice(0, 5).map((activity) => (
+                {activities.slice(0, 5).map((activity) => (
                   <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-accent/50 transition-colors">
                     <div className={`p-1.5 rounded-full ${getActivityColor(activity.type)}`}>
                       {isClient && getActivityIcon(activity.type)}
@@ -479,26 +496,26 @@ const GitHubPage = () => {
             <div className="bg-card rounded-lg shadow-sm border p-6">
               <h3 className="text-lg font-semibold text-card-foreground mb-4">Top Repositories</h3>
               <div className="space-y-3">
-                {safeRepositories.slice(0, 5).map((repo) => (
+                {repositories.slice(0, 5).map((repo) => (
                   <div key={repo.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/50 transition-colors">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
                         <h4 className="text-sm font-medium text-card-foreground truncate">{repo.name}</h4>
-                        {repo.isPrivate && isClient && <Lock className="h-3 w-3 text-muted-foreground" />}
+                        {repo.private && isClient && <Lock className="h-3 w-3 text-muted-foreground" />}
                       </div>
                       <p className="text-xs text-muted-foreground truncate">{repo.description}</p>
                       <div className="flex items-center space-x-3 mt-1">
                         <div className="flex items-center space-x-1">
                           <div className={`w-2 h-2 rounded-full ${getLanguageColor(repo.language)}`}></div>
-                          <span className="text-xs text-muted-foreground">{repo.language}</span>
+                          <span className="text-xs text-muted-foreground">{repo.language || 'N/A'}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           {isClient && <Star className="h-3 w-3 text-muted-foreground" />}
-                          <span className="text-xs text-muted-foreground">{repo.stars}</span>
+                          <span className="text-xs text-muted-foreground">{repo.stargazers_count}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           {isClient && <GitFork className="h-3 w-3 text-muted-foreground" />}
-                          <span className="text-xs text-muted-foreground">{repo.forks}</span>
+                          <span className="text-xs text-muted-foreground">{repo.forks_count}</span>
                         </div>
                       </div>
                     </div>
@@ -531,12 +548,12 @@ const GitHubPage = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-2">
                         <h3 className="text-lg font-semibold text-card-foreground truncate">{repo.name}</h3>
-                        {repo.isPrivate && isClient && <Lock className="h-4 w-4 text-muted-foreground" />}
+                        {repo.private && isClient && <Lock className="h-4 w-4 text-muted-foreground" />}
                       </div>
                       <p className="text-sm text-muted-foreground mb-3">{repo.description}</p>
                     </div>
                     <a
-                      href={repo.url}
+                      href={repo.html_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-muted-foreground hover:text-primary"
@@ -548,21 +565,21 @@ const GitHubPage = () => {
                   <div className="flex items-center space-x-4 text-sm text-muted-foreground mb-4">
                     <div className="flex items-center space-x-1">
                       <div className={`w-3 h-3 rounded-full ${getLanguageColor(repo.language)}`}></div>
-                      <span>{repo.language}</span>
+                      <span>{repo.language || 'N/A'}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       {isClient && <Star className="h-4 w-4" />}
-                      <span>{repo.stars}</span>
+                      <span>{repo.stargazers_count}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       {isClient && <GitFork className="h-4 w-4" />}
-                      <span>{repo.forks}</span>
+                      <span>{repo.forks_count}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center text-xs text-muted-foreground">
                     {isClient && <Calendar className="h-3 w-3 mr-1" />}
-                    Updated {isClient ? formatDate(repo.updatedAt) : ''}
+                    Updated {isClient ? formatDate(new Date(repo.updated_at)) : ''}
                   </div>
                 </div>
               ))

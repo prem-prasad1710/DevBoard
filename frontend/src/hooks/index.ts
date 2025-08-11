@@ -1304,3 +1304,6 @@ export const useTheme = () => {
 
   return { theme, setTheme };
 };
+
+// Export real-time GitHub hook
+export { useRealTimeGitHub } from './useRealTimeGitHub';
