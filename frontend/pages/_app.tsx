@@ -1,5 +1,6 @@
 import { AppProps } from 'next/app';
 import { ApolloProvider } from '@apollo/client';
+import { SessionProvider } from 'next-auth/react';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from 'next-themes';
 import Head from 'next/head';
@@ -7,7 +8,8 @@ import client from '@/lib/apollo-client';
 import { AuthProvider } from '@/contexts/AuthContext';
 import '../styles/globals.css';
 import { Analytics } from "@vercel/analytics/next";
-export default function App({ Component, pageProps }: AppProps) {
+
+export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
     <>
       <Head>
@@ -18,27 +20,29 @@ export default function App({ Component, pageProps }: AppProps) {
       </Head>
       
       <ApolloProvider client={client}>
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Component {...pageProps} />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: 'var(--background)',
-                  color: 'var(--foreground)',
-                  border: '1px solid var(--border)',
-                },
-              }}
-            /> <Analytics />
-          </ThemeProvider>
-        </AuthProvider>
+        <SessionProvider session={session}>
+          <AuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Component {...pageProps} />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: {
+                    background: 'var(--background)',
+                    color: 'var(--foreground)',
+                    border: '1px solid var(--border)',
+                  },
+                }}
+              /> <Analytics />
+            </ThemeProvider>
+          </AuthProvider>
+        </SessionProvider>
       </ApolloProvider>
     </>
   );
