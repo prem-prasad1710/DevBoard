@@ -1307,3 +1307,6 @@ export const useTheme = () => {
 
 // Export real-time GitHub hook
 export { useRealTimeGitHub } from './useRealTimeGitHub';
+
+// Export real-time Stack Overflow hook
+export { useRealTimeStackOverflow } from './useRealTimeStackOverflow';
