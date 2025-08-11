@@ -514,13 +514,25 @@ const StackOverflowPage = () => {
           </div>
         )}
 
-        {/* Loading Display */}
-        {loading && !error && (
+        {/* Loading Display - only show when we don't have any profile data yet */}
+        {loading && !error && !profile && (
           <div className="bg-muted/50 rounded-lg p-6 mb-6">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
               <p className="text-muted-foreground mt-3">Loading your Stack Overflow data...</p>
               <p className="text-sm text-muted-foreground/70 mt-1">This may take a moment</p>
+            </div>
+          </div>
+        )}
+
+        {/* Refreshing indicator - show when updating existing data */}
+        {loading && profile && !error && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mr-3"></div>
+              <p className="text-blue-700 dark:text-blue-300 text-sm font-medium">
+                Refreshing your Stack Overflow data...
+              </p>
             </div>
           </div>
         )}
@@ -670,13 +682,18 @@ const StackOverflowPage = () => {
               <h3 className="text-lg font-medium text-foreground mb-2">No activities found</h3>
               <p className="text-muted-foreground mb-4">
                 {searchTerm || selectedType || selectedTag 
-                  ? 'Try adjusting your filters' 
-                  : 'Your Stack Overflow activities will appear here once they are synced'}
+                  ? 'Try adjusting your filters to see more results' 
+                  : profile 
+                    ? 'Get started by asking questions, providing answers, or engaging with the Stack Overflow community!'
+                    : 'Your Stack Overflow activities will appear here once they are synced'}
               </p>
               {!searchTerm && !selectedType && !selectedTag && (
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 max-w-md mx-auto">
                   <p className="text-sm text-blue-700 dark:text-blue-300">
-                    💡 Make sure you've connected your Stack Overflow account and have some activity on the platform.
+                    {profile 
+                      ? '� Your Stack Overflow account is connected! Activities will automatically sync as you participate in the community.'
+                      : '�💡 Make sure you have connected your Stack Overflow account and have some activity on the platform.'
+                    }
                   </p>
                 </div>
               )}

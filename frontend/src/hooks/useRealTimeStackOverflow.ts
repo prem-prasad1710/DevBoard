@@ -112,36 +112,57 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
       if (profileData.status === 'fulfilled') {
         setProfile(profileData.value as StackOverflowUser);
         successCount++;
+      } else {
+        // If profile fails, this is a critical error since user should exist
+        console.error('Failed to fetch user profile:', (profileData as PromiseRejectedResult).reason);
       }
 
       if (questionsData.status === 'fulfilled') {
         setQuestions(questionsData.value as StackOverflowQuestion[]);
         successCount++;
+      } else {
+        // Set empty array for failed requests - user might not have questions
+        setQuestions([]);
       }
 
       if (answersData.status === 'fulfilled') {
         setAnswers(answersData.value as StackOverflowAnswer[]);
         successCount++;
+      } else {
+        // Set empty array for failed requests - user might not have answers
+        setAnswers([]);
       }
 
       if (commentsData.status === 'fulfilled') {
         setComments(commentsData.value as StackOverflowComment[]);
         successCount++;
+      } else {
+        // Set empty array for failed requests - user might not have comments
+        setComments([]);
       }
 
       if (badgesData.status === 'fulfilled') {
         setBadges(badgesData.value as StackOverflowBadge[]);
         successCount++;
+      } else {
+        // Set empty array for failed requests - user might not have badges
+        setBadges([]);
       }
 
       if (activitiesData.status === 'fulfilled') {
         setActivities(activitiesData.value as StackOverflowActivity[]);
         successCount++;
+      } else {
+        // Set empty array for failed requests - user might not have activity
+        setActivities([]);
       }
 
       if (statsData.status === 'fulfilled') {
         setStats(statsData.value as StackOverflowStats);
         successCount++;
+      } else {
+        // Set null for failed stats - user might not have stats
+        setStats(null);
       }
 
       // Log any failures for debugging
@@ -153,9 +174,20 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
         console.warn('Some Stack Overflow data requests failed:', failures);
       }
 
-      // If no requests succeeded, set an error
-      if (successCount === 0) {
-        setError(new Error('Unable to fetch any Stack Overflow data. Please check your connection and try again.'));
+      // Only set error if profile fetch failed - this means user doesn't exist or critical error
+      if (profileData.status === 'rejected') {
+        const profileError = (profileData as PromiseRejectedResult).reason;
+        if (profileError instanceof Error) {
+          if (profileError.message.includes('timed out')) {
+            setError(new Error('Stack Overflow API is currently slow. Please try again in a few moments.'));
+          } else if (profileError.message.includes('404') || profileError.message.includes('not found')) {
+            setError(new Error('Stack Overflow user not found. Please check the user ID and try again.'));
+          } else {
+            setError(new Error('Unable to connect to Stack Overflow. Please check your connection and try again.'));
+          }
+        } else {
+          setError(new Error('Unable to fetch Stack Overflow profile. Please try again.'));
+        }
       }
 
     } catch (err) {
