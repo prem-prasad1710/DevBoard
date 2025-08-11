@@ -11,23 +11,16 @@ const Trophy = dynamic(() => import('lucide-react').then(mod => ({ default: mod.
 const Eye = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Eye })), { ssr: false });
 const MessageSquare = dynamic(() => import('lucide-react').then(mod => ({ default: mod.MessageSquare })), { ssr: false });
 const ThumbsUp = dynamic(() => import('lucide-react').then(mod => ({ default: mod.ThumbsUp })), { ssr: false });
-const ThumbsDown = dynamic(() => import('lucide-react').then(mod => ({ default: mod.ThumbsDown })), { ssr: false });
 const Search = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Search })), { ssr: false });
-const Filter = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Filter })), { ssr: false });
 const Tag = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Tag })), { ssr: false });
 const Calendar = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Calendar })), { ssr: false });
 const TrendingUp = dynamic(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp })), { ssr: false });
 const Award = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Award })), { ssr: false });
 const ExternalLink = dynamic(() => import('lucide-react').then(mod => ({ default: mod.ExternalLink })), { ssr: false });
 const RefreshCw = dynamic(() => import('lucide-react').then(mod => ({ default: mod.RefreshCw })), { ssr: false });
-const Link2 = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Link2 })), { ssr: false });
 const BarChart3 = dynamic(() => import('lucide-react').then(mod => ({ default: mod.BarChart3 })), { ssr: false });
 const HelpCircle = dynamic(() => import('lucide-react').then(mod => ({ default: mod.HelpCircle })), { ssr: false });
-const CheckCircle = dynamic(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle })), { ssr: false });
-const Star = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Star })), { ssr: false });
 const Activity = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Activity })), { ssr: false });
-const Code = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Code })), { ssr: false });
-const User = dynamic(() => import('lucide-react').then(mod => ({ default: mod.User })), { ssr: false });
 
 const StackOverflowPage = () => {
   const router = useRouter();
@@ -35,7 +28,6 @@ const StackOverflowPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
-  const [activeTab, setActiveTab] = useState<'overview' | 'questions' | 'answers' | 'activity' | 'badges'>('overview');
   const [isClient, setIsClient] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -75,9 +67,6 @@ const StackOverflowPage = () => {
 
   // Ensure arrays are always defined to prevent filter errors
   const safeActivities = activities || [];
-  const safeQuestions = questions || [];
-  const safeAnswers = answers || [];
-  const safeBadges = badges || [];
 
   // Filter activities based on search and filters
   const filteredActivities = safeActivities.filter(activity => {
@@ -89,25 +78,6 @@ const StackOverflowPage = () => {
     const matchesTag = !selectedTag || (activity.tags && activity.tags.includes(selectedTag));
     
     return matchesSearch && matchesType && matchesTag;
-  });
-
-  // Filter questions
-  const filteredQuestions = safeQuestions.filter(question => {
-    const matchesSearch = !searchTerm || 
-      question.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      question.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesTag = !selectedTag || question.tags.includes(selectedTag);
-    
-    return matchesSearch && matchesTag;
-  });
-
-  // Filter answers
-  const filteredAnswers = safeAnswers.filter(answer => {
-    const matchesSearch = !searchTerm || 
-      (answer.body && answer.body.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    return matchesSearch;
   });
 
   // Get unique values for filters
@@ -138,19 +108,6 @@ const StackOverflowPage = () => {
       case 'comment':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
       case 'badge':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  };
-
-  const getBadgeColor = (rank: 'bronze' | 'silver' | 'gold') => {
-    switch (rank) {
-      case 'gold':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'silver':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-      case 'bronze':
         return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
@@ -211,19 +168,19 @@ const StackOverflowPage = () => {
         </div>
 
         <div className="space-y-4 mb-6">
-          <div className="flex items-center text-sm text-muted-foreground">
+          <div className="flex items-center justify-center text-sm text-muted-foreground">
             {isClient && <HelpCircle className="h-4 w-4 mr-2 text-blue-600" />}
             Track your questions and their performance automatically
           </div>
-          <div className="flex items-center text-sm text-muted-foreground">
+          <div className="flex items-center justify-center text-sm text-muted-foreground">
             {isClient && <MessageCircle className="h-4 w-4 mr-2 text-green-600" />}
             Monitor your answers and acceptance rates
           </div>
-          <div className="flex items-center text-sm text-muted-foreground">
+          <div className="flex items-center justify-center text-sm text-muted-foreground">
             {isClient && <Trophy className="h-4 w-4 mr-2 text-orange-600" />}
             View your badges and reputation growth
           </div>
-          <div className="flex items-center text-sm text-muted-foreground">
+          <div className="flex items-center justify-center text-sm text-muted-foreground">
             {isClient && <TrendingUp className="h-4 w-4 mr-2 text-purple-600" />}
             Analyze your contribution patterns and impact
           </div>
@@ -340,48 +297,6 @@ const StackOverflowPage = () => {
     );
   }
 
-  // Get unique values for filters
-  const activityTypes = [...new Set(safeActivities.map(activity => activity.type))];
-  const allTags = [...new Set(safeActivities.flatMap(activity => activity.tags))];
-
-  const getActivityTypeIcon = (type: string) => {
-    switch (type) {
-      case 'question':
-        return <MessageCircle className="h-4 w-4" />;
-      case 'answer':
-        return <MessageSquare className="h-4 w-4" />;
-      default:
-        return <MessageCircle className="h-4 w-4" />;
-    }
-  };
-
-  const getActivityTypeColor = (type: string) => {
-    switch (type) {
-      case 'question':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case 'answer':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
-    }
-  };
-
-  const formatNumber = (num: number) => {
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'k';
-    }
-    return num.toString();
-  };
-
-  const formatDate = (date: Date) => {
-    // Use a consistent format to prevent hydration errors
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
   return (
     <Layout>
       <div className="max-w-7xl mx-auto">
@@ -389,8 +304,8 @@ const StackOverflowPage = () => {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center">
-              {isClient && <MessageCircle className="h-6 w-6 mr-2" />}
-              Stack Overflow
+              {isClient && <BarChart3 className="h-6 w-6 mr-2 text-orange-500" />}
+              Stack Overflow Dashboard
             </h1>
             <p className="text-muted-foreground">Track your questions, answers, and reputation</p>
           </div>
@@ -409,11 +324,13 @@ const StackOverflowPage = () => {
           <div className="bg-card rounded-lg shadow-sm border p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <div className="h-12 w-12 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-lg mr-4">
-                  {profile.username.charAt(0).toUpperCase()}
-                </div>
+                <img
+                  src={profile.profile_image}
+                  alt={profile.display_name}
+                  className="h-12 w-12 rounded-lg mr-4"
+                />
                 <div>
-                  <h2 className="text-xl font-semibold text-card-foreground">{profile.username}</h2>
+                  <h2 className="text-xl font-semibold text-card-foreground">{profile.display_name}</h2>
                   <div className="flex items-center text-muted-foreground">
                     {isClient && <Trophy className="h-4 w-4 mr-1" />}
                     <span className="font-medium text-orange-600">{formatNumber(profile.reputation)}</span>
@@ -423,7 +340,7 @@ const StackOverflowPage = () => {
               </div>
               <div className="flex items-center space-x-4">
                 <a
-                  href={`https://stackoverflow.com/users/${profile.id}/${profile.username}`}
+                  href={`https://stackoverflow.com/users/${profile.user_id}/${profile.display_name}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary hover:text-primary/80"
@@ -436,35 +353,47 @@ const StackOverflowPage = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold text-foreground">{profile.stats.totalQuestions}</div>
+                <div className="text-2xl font-bold text-foreground">{profile.question_count}</div>
                 <div className="text-sm text-muted-foreground">Questions</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold text-foreground">{profile.stats.totalAnswers}</div>
+                <div className="text-2xl font-bold text-foreground">{profile.answer_count}</div>
                 <div className="text-sm text-muted-foreground">Answers</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold text-foreground">{formatNumber(profile.stats.totalViews)}</div>
+                <div className="text-2xl font-bold text-foreground">{formatNumber(profile.view_count)}</div>
                 <div className="text-sm text-muted-foreground">Views</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
                 <div className="flex justify-center items-center space-x-2">
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-yellow-500 rounded-full mr-1"></div>
-                    <span className="text-sm font-medium">{profile.stats.badgeCounts.gold}</span>
+                    <span className="text-sm font-medium">{profile.badge_counts.gold}</span>
                   </div>
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-gray-400 rounded-full mr-1"></div>
-                    <span className="text-sm font-medium">{profile.stats.badgeCounts.silver}</span>
+                    <span className="text-sm font-medium">{profile.badge_counts.silver}</span>
                   </div>
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-orange-600 rounded-full mr-1"></div>
-                    <span className="text-sm font-medium">{profile.stats.badgeCounts.bronze}</span>
+                    <span className="text-sm font-medium">{profile.badge_counts.bronze}</span>
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground">Badges</div>
               </div>
             </div>
+
+            {/* Real-time sync indicator */}
+            {canFetch && (
+              <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center text-sm">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                  <span className="text-green-700 dark:text-green-300 font-medium">
+                    Real-time data sync active
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -515,6 +444,13 @@ const StackOverflowPage = () => {
             <div className="text-center py-12">
               <div className="text-destructive mb-4">Error loading activities</div>
               <p className="text-muted-foreground">{error.message}</p>
+              <button
+                onClick={refetch}
+                className="mt-4 inline-flex items-center px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90"
+              >
+                {isClient && <RefreshCw className="h-4 w-4 mr-2" />}
+                Try Again
+              </button>
             </div>
           ) : filteredActivities.length === 0 ? (
             <div className="text-center py-12">
@@ -523,12 +459,15 @@ const StackOverflowPage = () => {
               <p className="text-muted-foreground mb-4">
                 {searchTerm || selectedType || selectedTag 
                   ? 'Try adjusting your filters' 
-                  : 'Connect your Stack Overflow account to see your activities'}
+                  : 'Your Stack Overflow activities will appear here once they are synced'}
               </p>
-              <button className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90">
-                {isClient && <Link2 className="h-4 w-4 mr-2" />}
-                Connect Account
-              </button>
+              {!searchTerm && !selectedType && !selectedTag && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 max-w-md mx-auto">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    💡 Make sure you've connected your Stack Overflow account and have some activity on the platform.
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             filteredActivities.map((activity) => (
@@ -536,8 +475,8 @@ const StackOverflowPage = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center mb-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getActivityTypeColor(activity.type)}`}>
-                        {isClient && getActivityTypeIcon(activity.type)}
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getActivityColor(activity.type)}`}>
+                        {isClient && getActivityIcon(activity.type)}
                         <span className="ml-1">{activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}</span>
                       </span>
                       <div className="flex items-center ml-4 text-sm text-muted-foreground">
@@ -550,6 +489,11 @@ const StackOverflowPage = () => {
                         {activity.title}
                       </a>
                     </h3>
+                    {activity.content && (
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                        {activity.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
+                      </p>
+                    )}
                   </div>
                   <a
                     href={activity.url}
@@ -568,36 +512,74 @@ const StackOverflowPage = () => {
                       <span className="font-medium text-foreground">{activity.score}</span>
                       <span className="ml-1">score</span>
                     </div>
-                    <div className="flex items-center">
-                      {isClient && <Eye className="h-4 w-4 mr-1" />}
-                      <span className="font-medium text-foreground">{formatNumber(activity.viewCount)}</span>
-                      <span className="ml-1">views</span>
-                    </div>
-                    {activity.type === 'question' && (
+                    {activity.metadata?.viewCount && (
+                      <div className="flex items-center">
+                        {isClient && <Eye className="h-4 w-4 mr-1" />}
+                        <span className="font-medium text-foreground">{formatNumber(activity.metadata.viewCount)}</span>
+                        <span className="ml-1">views</span>
+                      </div>
+                    )}
+                    {activity.type === 'question' && activity.metadata?.answerCount !== undefined && (
                       <div className="flex items-center">
                         {isClient && <MessageSquare className="h-4 w-4 mr-1" />}
-                        <span className="font-medium text-foreground">{activity.answerCount}</span>
+                        <span className="font-medium text-foreground">{activity.metadata.answerCount}</span>
                         <span className="ml-1">answers</span>
+                      </div>
+                    )}
+                    {activity.accepted && (
+                      <div className="flex items-center">
+                        {isClient && <Trophy className="h-4 w-4 mr-1 text-green-600" />}
+                        <span className="text-green-600 font-medium">Accepted</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {activity.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-secondary text-secondary-foreground"
-                    >
-                      {isClient && <Tag className="h-3 w-3 mr-1" />}
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                {activity.tags && activity.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {activity.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 cursor-pointer"
+                        onClick={() => setSelectedTag(tag)}
+                      >
+                        {isClient && <Tag className="h-3 w-3 mr-1" />}
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))
           )}
         </div>
+
+        {/* Stats Summary */}
+        {stats && (
+          <div className="mt-8 bg-card rounded-lg shadow-sm border p-6">
+            <h3 className="text-lg font-semibold text-card-foreground mb-4">
+              Stack Overflow Statistics
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600">{formatNumber(stats.totalReputation)}</div>
+                <div className="text-sm text-muted-foreground">Total Reputation</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{stats.totalQuestions}</div>
+                <div className="text-sm text-muted-foreground">Questions Asked</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{stats.totalAnswers}</div>
+                <div className="text-sm text-muted-foreground">Answers Given</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">{stats.acceptedAnswers}</div>
+                <div className="text-sm text-muted-foreground">Accepted Answers</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
