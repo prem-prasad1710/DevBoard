@@ -482,6 +482,49 @@ const StackOverflowPage = () => {
           </button>
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                {isClient && <HelpCircle className="h-5 w-5 text-destructive" />}
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-destructive">
+                  Error loading Stack Overflow data
+                </h3>
+                <div className="mt-2 text-sm text-destructive/80">
+                  <p>{error.message}</p>
+                  {error.message.includes('timed out') && (
+                    <p className="mt-1">The Stack Overflow API is currently slow. Please try again in a few moments.</p>
+                  )}
+                </div>
+                <div className="mt-4">
+                  <button
+                    onClick={refetch}
+                    disabled={loading}
+                    className="inline-flex items-center px-3 py-2 text-sm font-medium text-destructive hover:text-destructive/80 border border-destructive/20 rounded-lg hover:bg-destructive/10 disabled:opacity-50"
+                  >
+                    {isClient && <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />}
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Loading Display */}
+        {loading && !error && (
+          <div className="bg-muted/50 rounded-lg p-6 mb-6">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+              <p className="text-muted-foreground mt-3">Loading your Stack Overflow data...</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">This may take a moment</p>
+            </div>
+          </div>
+        )}
+
         {/* Profile Stats */}
         {profile && (
           <div className="bg-card rounded-lg shadow-sm border p-6 mb-6">

@@ -154,19 +154,36 @@ export class StackOverflowAPIService {
       }
     });
 
-    const response = await fetch(`${this.BASE_URL}${endpoint}?${searchParams.toString()}`, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
+    // Create an AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-    if (!response.ok) {
-      throw new Error(`Stack Overflow API error: ${response.status} ${response.statusText}`);
+    try {
+      const response = await fetch(`${this.BASE_URL}${endpoint}?${searchParams.toString()}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Stack Overflow API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Stack Overflow API request timed out');
+      }
+      
+      throw error;
     }
-
-    const data = await response.json();
-    return data;
   }
 
   async getUserProfile(userId: string): Promise<StackOverflowUser | null> {

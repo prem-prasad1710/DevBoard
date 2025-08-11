@@ -81,7 +81,12 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
     setError(null);
 
     try {
-      // Fetch all data in parallel
+      // Add timeout to prevent hanging
+      const timeoutPromise = (ms: number) => new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Stack Overflow API request timed out')), ms)
+      );
+
+      // Fetch all data in parallel with timeout
       const [
         profileData,
         questionsData,
@@ -91,42 +96,52 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
         activitiesData,
         statsData
       ] = await Promise.allSettled([
-        stackOverflowAPI.getUserProfile(userId),
-        stackOverflowAPI.getUserQuestions(userId, 1, 50),
-        stackOverflowAPI.getUserAnswers(userId, 1, 50),
-        stackOverflowAPI.getUserComments(userId, 1, 50),
-        stackOverflowAPI.getUserBadges(userId),
-        stackOverflowAPI.getRecentActivity(userId),
-        stackOverflowAPI.getUserStats(userId)
+        Promise.race([stackOverflowAPI.getUserProfile(userId), timeoutPromise(30000)]),
+        Promise.race([stackOverflowAPI.getUserQuestions(userId, 1, 50), timeoutPromise(30000)]),
+        Promise.race([stackOverflowAPI.getUserAnswers(userId, 1, 50), timeoutPromise(30000)]),
+        Promise.race([stackOverflowAPI.getUserComments(userId, 1, 50), timeoutPromise(30000)]),
+        Promise.race([stackOverflowAPI.getUserBadges(userId), timeoutPromise(30000)]),
+        Promise.race([stackOverflowAPI.getRecentActivity(userId), timeoutPromise(30000)]),
+        Promise.race([stackOverflowAPI.getUserStats(userId), timeoutPromise(30000)])
       ]);
+
+      // Count successful requests
+      let successCount = 0;
 
       // Update state with successful results
       if (profileData.status === 'fulfilled') {
-        setProfile(profileData.value);
+        setProfile(profileData.value as StackOverflowUser);
+        successCount++;
       }
 
       if (questionsData.status === 'fulfilled') {
-        setQuestions(questionsData.value);
+        setQuestions(questionsData.value as StackOverflowQuestion[]);
+        successCount++;
       }
 
       if (answersData.status === 'fulfilled') {
-        setAnswers(answersData.value);
+        setAnswers(answersData.value as StackOverflowAnswer[]);
+        successCount++;
       }
 
       if (commentsData.status === 'fulfilled') {
-        setComments(commentsData.value);
+        setComments(commentsData.value as StackOverflowComment[]);
+        successCount++;
       }
 
       if (badgesData.status === 'fulfilled') {
-        setBadges(badgesData.value);
+        setBadges(badgesData.value as StackOverflowBadge[]);
+        successCount++;
       }
 
       if (activitiesData.status === 'fulfilled') {
-        setActivities(activitiesData.value);
+        setActivities(activitiesData.value as StackOverflowActivity[]);
+        successCount++;
       }
 
       if (statsData.status === 'fulfilled') {
-        setStats(statsData.value);
+        setStats(statsData.value as StackOverflowStats);
+        successCount++;
       }
 
       // Log any failures for debugging
@@ -136,6 +151,11 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
 
       if (failures.length > 0) {
         console.warn('Some Stack Overflow data requests failed:', failures);
+      }
+
+      // If no requests succeeded, set an error
+      if (successCount === 0) {
+        setError(new Error('Unable to fetch any Stack Overflow data. Please check your connection and try again.'));
       }
 
     } catch (err) {
@@ -171,8 +191,6 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
   // Connect user function - saves Stack Overflow ID to localStorage
   const connectUser = useCallback(async (userId: string): Promise<void> => {
     try {
-      setLoading(true);
-      
       // Store Stack Overflow ID in localStorage
       if (typeof window !== 'undefined' && session?.user?.email) {
         localStorage.setItem(`stackoverflow_id_${session.user.email}`, userId);
@@ -185,12 +203,11 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // Fetch Stack Overflow data with the new user ID
+      // fetchStackOverflowData handles its own loading state
       await fetchStackOverflowData();
     } catch (error) {
       console.error('Error connecting Stack Overflow user:', error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   }, [session?.user?.email, fetchStackOverflowData]);
 
