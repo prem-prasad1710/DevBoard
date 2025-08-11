@@ -8,6 +8,11 @@ export const authOptions: NextAuthOptions = {
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "read:user user:email public_repo"
+        }
+      }
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -53,11 +58,26 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, profile }) {
       if (account && user) {
         token.accessToken = account.access_token;
         token.provider = account.provider;
         token.userId = user.id;
+        
+        // Store additional GitHub profile data
+        if (account.provider === 'github' && profile) {
+          token.githubData = {
+            login: (profile as any).login,
+            company: (profile as any).company,
+            location: (profile as any).location,
+            bio: (profile as any).bio,
+            public_repos: (profile as any).public_repos,
+            followers: (profile as any).followers,
+            following: (profile as any).following,
+            html_url: (profile as any).html_url,
+            created_at: (profile as any).created_at
+          };
+        }
       }
       return token;
     },
@@ -67,6 +87,11 @@ export const authOptions: NextAuthOptions = {
         (session as any).provider = token.provider;
         (session.user as any).id = token.userId;
         (session.user as any).provider = token.provider;
+        
+        // Include GitHub data in session
+        if (token.githubData && token.provider === 'github') {
+          Object.assign(session.user, token.githubData);
+        }
       }
       return session;
     },

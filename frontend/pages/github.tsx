@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import Layout from '@/components/Layout';
 import { useGitHubActivities } from '@/hooks';
@@ -28,6 +29,7 @@ const Globe = dynamic(() => import('lucide-react').then(mod => ({ default: mod.G
 
 const GitHubPage = () => {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('');
   const [selectedRepo, setSelectedRepo] = useState('');
@@ -39,6 +41,19 @@ const GitHubPage = () => {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Check if user is authenticated with GitHub
+  const isGitHubUser = session?.user && (session as any).provider === 'github';
+  const isAuthenticated = status === 'authenticated';
+
+  // If user is not authenticated, redirect to login
+  useEffect(() => {
+    if (status === 'loading') return; // Still loading
+    
+    if (!isAuthenticated) {
+      router.push('/auth/login');
+    }
+  }, [isAuthenticated, status, router]);
 
   // Ensure activities is always an array to prevent filter errors
   const safeActivities = activities || [];
@@ -131,6 +146,111 @@ const GitHubPage = () => {
     });
   };
 
+  // GitHub Sign-In Component for non-GitHub users
+  const GitHubSignInPrompt = () => (
+    <div className="max-w-2xl mx-auto text-center py-12">
+      <div className="bg-card rounded-lg shadow-sm border p-8">
+        <div className="mb-6">
+          {isClient && <Github className="h-16 w-16 text-muted-foreground mx-auto mb-4" />}
+          <h2 className="text-2xl font-semibold text-card-foreground mb-2">
+            Connect Your GitHub Account
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Sign in with GitHub to access your repositories, commits, and detailed analytics
+          </p>
+        </div>
+
+        <div className="space-y-4 mb-6">
+          <div className="flex items-center text-sm text-muted-foreground">
+            {isClient && <Activity className="h-4 w-4 mr-2 text-green-600" />}
+            Track your commits and contributions automatically
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            {isClient && <Code className="h-4 w-4 mr-2 text-blue-600" />}
+            View all your repositories with detailed analytics
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            {isClient && <TrendingUp className="h-4 w-4 mr-2 text-purple-600" />}
+            Analyze your coding patterns and productivity
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            {isClient && <Star className="h-4 w-4 mr-2 text-yellow-600" />}
+            Monitor stars, forks, and repository performance
+          </div>
+        </div>
+
+        <div className="bg-accent/30 rounded-lg p-4 mb-6">
+          <h3 className="font-medium text-foreground mb-2">What you'll get:</h3>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• Real-time repository data and statistics</li>
+            <li>• Commit history and contribution graphs</li>
+            <li>• Pull request and issue tracking</li>
+            <li>• Language usage and project insights</li>
+            <li>• Automated syncing with your GitHub profile</li>
+          </ul>
+        </div>
+
+        <button
+          onClick={() => {
+            // Use NextAuth to sign in with GitHub
+            import('next-auth/react').then(({ signIn }) => {
+              signIn('github', { callbackUrl: '/github' });
+            });
+          }}
+          className="inline-flex items-center px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors"
+        >
+          {isClient && <Github className="h-5 w-5 mr-2" />}
+          Sign in with GitHub
+        </button>
+
+        <div className="mt-6 text-sm text-muted-foreground">
+          <p>
+            You're currently signed in as: <strong>{session?.user?.email}</strong>
+          </p>
+          <p className="mt-2">
+            To access GitHub analytics, please connect your GitHub account
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // If user is not a GitHub user, show sign-in prompt
+  if (isAuthenticated && !isGitHubUser) {
+    return (
+      <Layout>
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground flex items-center">
+                {isClient && <Github className="h-6 w-6 mr-2" />}
+                GitHub Dashboard
+              </h1>
+              <p className="text-muted-foreground">Track your repositories, commits, and contributions</p>
+            </div>
+          </div>
+
+          <GitHubSignInPrompt />
+        </div>
+      </Layout>
+    );
+  }
+
+  // If loading or not authenticated, show loading
+  if (status === 'loading' || !isAuthenticated) {
+    return (
+      <Layout>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="text-muted-foreground mt-4">Loading...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto">
@@ -140,40 +260,54 @@ const GitHubPage = () => {
             <h1 className="text-2xl font-bold text-foreground flex items-center">
               {isClient && <Github className="h-6 w-6 mr-2" />}
               GitHub Dashboard
+              {isGitHubUser && (
+                <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                  Connected
+                </span>
+              )}
             </h1>
-            <p className="text-muted-foreground">Track your repositories, commits, and contributions</p>
+            <p className="text-muted-foreground">
+              {isGitHubUser 
+                ? `Showing data for ${session?.user?.name || 'your GitHub account'}`
+                : 'Track your repositories, commits, and contributions'
+              }
+            </p>
           </div>
-          <button
-            onClick={refetch}
-            disabled={loading}
-            className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50"
-          >
-            {isClient && <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />}
-            Sync Data
-          </button>
+          {isGitHubUser && (
+            <button
+              onClick={refetch}
+              disabled={loading}
+              className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50"
+            >
+              {isClient && <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />}
+              Sync Data
+            </button>
+          )}
         </div>
 
         {/* Profile Stats */}
-        {profile && (
+        {(profile || session?.user) && (
           <div className="bg-card rounded-lg shadow-sm border p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <img
-                  src={profile.avatarUrl}
-                  alt={profile.username}
+                  src={session?.user?.image || profile?.avatarUrl || '/placeholder-avatar.png'}
+                  alt={session?.user?.name || profile?.username || 'User'}
                   className="h-16 w-16 rounded-full border-2 border-border mr-4"
                 />
                 <div>
-                  <h2 className="text-xl font-semibold text-card-foreground">{profile.username}</h2>
+                  <h2 className="text-xl font-semibold text-card-foreground">
+                    {session?.user?.name || profile?.username || 'GitHub User'}
+                  </h2>
                   <div className="flex items-center text-muted-foreground">
                     {isClient && <Github className="h-4 w-4 mr-1" />}
-                    <span>GitHub Profile</span>
+                    <span>GitHub Profile - Connected via OAuth</span>
                   </div>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
                 <a
-                  href={`https://github.com/${profile.username}`}
+                  href={`https://github.com/${(session?.user as any)?.login || profile?.username || ''}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary hover:text-primary/80"
@@ -186,22 +320,64 @@ const GitHubPage = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold text-foreground">{formatNumber(profile.stats.totalCommits)}</div>
-                <div className="text-sm text-muted-foreground">Commits</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {formatNumber(profile?.stats?.totalCommits || (session?.user as any)?.public_repos || 0)}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {profile?.stats?.totalCommits ? 'Commits' : 'Public Repos'}
+                </div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold text-foreground">{profile.stats.totalRepos}</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {profile?.stats?.totalRepos || (session?.user as any)?.public_repos || 0}
+                </div>
                 <div className="text-sm text-muted-foreground">Repositories</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold text-foreground">{formatNumber(profile.stats.totalStars)}</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {formatNumber(profile?.stats?.totalStars || 0)}
+                </div>
                 <div className="text-sm text-muted-foreground">Stars</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold text-foreground">{profile.stats.totalPullRequests}</div>
-                <div className="text-sm text-muted-foreground">Pull Requests</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {profile?.stats?.totalPullRequests || (session?.user as any)?.followers || 0}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {profile?.stats?.totalPullRequests ? 'Pull Requests' : 'Followers'}
+                </div>
               </div>
             </div>
+
+            {/* GitHub User Info */}
+            {(session?.user as any)?.login && (
+              <div className="mt-4 p-4 bg-background rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-foreground">Username: </span>
+                    <span className="text-muted-foreground">@{(session.user as any).login}</span>
+                  </div>
+                  {(session.user as any).company && (
+                    <div>
+                      <span className="font-medium text-foreground">Company: </span>
+                      <span className="text-muted-foreground">{(session.user as any).company}</span>
+                    </div>
+                  )}
+                  {(session.user as any).location && (
+                    <div>
+                      <span className="font-medium text-foreground">Location: </span>
+                      <span className="text-muted-foreground">{(session.user as any).location}</span>
+                    </div>
+                  )}
+                </div>
+                {(session.user as any).bio && (
+                  <div className="mt-3">
+                    <span className="font-medium text-foreground">Bio: </span>
+                    <span className="text-muted-foreground">{(session.user as any).bio}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
