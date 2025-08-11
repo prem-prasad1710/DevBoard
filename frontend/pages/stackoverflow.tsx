@@ -117,7 +117,10 @@ const StackOverflowPage = () => {
     }
   };
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | undefined | null) => {
+    if (num === undefined || num === null || isNaN(num)) {
+      return '0';
+    }
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';
     }
@@ -175,17 +178,19 @@ const StackOverflowPage = () => {
 
   // Memoized handlers to prevent unnecessary re-renders
   const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserSearchQuery(e.target.value);
+    const value = e.target.value;
+    setUserSearchQuery(value);
   }, []);
 
   const handleSearchInputKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && userSearchQuery.trim()) {
+      e.preventDefault();
       handleUserSearch();
     }
-  }, [handleUserSearch]);
+  }, [userSearchQuery, handleUserSearch]);
 
   // Stack Overflow Connection Component for non-connected users
-  const StackOverflowConnectionPrompt = () => (
+  const StackOverflowConnectionPrompt = React.memo(() => (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 -m-8 p-8">
       <div className="max-w-4xl mx-auto">
         {/* Hero Section */}
@@ -275,6 +280,7 @@ const StackOverflowPage = () => {
               </label>
               <div className="flex gap-3">
                 <input
+                  key="stackoverflow-search-input"
                   type="text"
                   placeholder="e.g., Jon Skeet, Gordon Linoff, or your display name..."
                   className="flex-1 px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-background text-foreground text-lg"
@@ -319,12 +325,12 @@ const StackOverflowPage = () => {
                     >
                       <div className="flex items-center space-x-4">
                         <img
-                          src={user.profile_image}
-                          alt={user.display_name}
+                          src={user.profile_image || '/default-avatar.png'}
+                          alt={user.display_name || 'User'}
                           className="h-12 w-12 rounded-full border-2 border-orange-200"
                         />
                         <div>
-                          <div className="font-semibold text-foreground text-lg">{user.display_name}</div>
+                          <div className="font-semibold text-foreground text-lg">{user.display_name || 'Unknown User'}</div>
                           <div className="text-muted-foreground flex items-center">
                             {isClient && <Trophy className="h-4 w-4 mr-1 text-orange-500" />}
                             <span className="font-medium text-orange-600">{formatNumber(user.reputation)}</span>
@@ -435,7 +441,7 @@ const StackOverflowPage = () => {
         </div>
       </div>
     </div>
-  );
+  ));
 
   // If user is not connected to Stack Overflow, show connection prompt
   if (isAuthenticated && !isStackOverflowUser) {
@@ -543,12 +549,12 @@ const StackOverflowPage = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <img
-                  src={profile.profile_image}
-                  alt={profile.display_name}
+                  src={profile.profile_image || '/default-avatar.png'}
+                  alt={profile.display_name || 'User'}
                   className="h-12 w-12 rounded-lg mr-4"
                 />
                 <div>
-                  <h2 className="text-xl font-semibold text-card-foreground">{profile.display_name}</h2>
+                  <h2 className="text-xl font-semibold text-card-foreground">{profile.display_name || 'Unknown User'}</h2>
                   <div className="flex items-center text-muted-foreground">
                     {isClient && <Trophy className="h-4 w-4 mr-1" />}
                     <span className="font-medium text-orange-600">{formatNumber(profile.reputation)}</span>
@@ -577,11 +583,11 @@ const StackOverflowPage = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold text-foreground">{profile.question_count}</div>
+                <div className="text-2xl font-bold text-foreground">{profile.question_count || 0}</div>
                 <div className="text-sm text-muted-foreground">Questions</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
-                <div className="text-2xl font-bold text-foreground">{profile.answer_count}</div>
+                <div className="text-2xl font-bold text-foreground">{profile.answer_count || 0}</div>
                 <div className="text-sm text-muted-foreground">Answers</div>
               </div>
               <div className="text-center p-3 bg-background rounded-lg">
@@ -592,15 +598,15 @@ const StackOverflowPage = () => {
                 <div className="flex justify-center items-center space-x-2">
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-yellow-500 rounded-full mr-1"></div>
-                    <span className="text-sm font-medium">{profile.badge_counts.gold}</span>
+                    <span className="text-sm font-medium">{profile.badge_counts?.gold || 0}</span>
                   </div>
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-gray-400 rounded-full mr-1"></div>
-                    <span className="text-sm font-medium">{profile.badge_counts.silver}</span>
+                    <span className="text-sm font-medium">{profile.badge_counts?.silver || 0}</span>
                   </div>
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-orange-600 rounded-full mr-1"></div>
-                    <span className="text-sm font-medium">{profile.badge_counts.bronze}</span>
+                    <span className="text-sm font-medium">{profile.badge_counts?.bronze || 0}</span>
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground">Badges</div>
@@ -738,7 +744,7 @@ const StackOverflowPage = () => {
                   <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                     <div className="flex items-center">
                       {isClient && <ThumbsUp className="h-4 w-4 mr-1" />}
-                      <span className="font-medium text-foreground">{activity.score}</span>
+                      <span className="font-medium text-foreground">{activity.score || 0}</span>
                       <span className="ml-1">score</span>
                     </div>
                     {activity.metadata?.viewCount && (
@@ -748,7 +754,7 @@ const StackOverflowPage = () => {
                         <span className="ml-1">views</span>
                       </div>
                     )}
-                    {activity.type === 'question' && activity.metadata?.answerCount !== undefined && (
+                    {activity.type === 'question' && typeof activity.metadata?.answerCount === 'number' && (
                       <div className="flex items-center">
                         {isClient && <MessageSquare className="h-4 w-4 mr-1" />}
                         <span className="font-medium text-foreground">{activity.metadata.answerCount}</span>
