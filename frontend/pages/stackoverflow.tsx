@@ -186,138 +186,251 @@ const StackOverflowPage = () => {
 
   // Stack Overflow Connection Component for non-connected users
   const StackOverflowConnectionPrompt = () => (
-    <div className="max-w-2xl mx-auto text-center py-12">
-      <div className="bg-card rounded-lg shadow-sm border p-8">
-        <div className="mb-6">
-          {isClient && <BarChart3 className="h-16 w-16 text-orange-500 mx-auto mb-4" />}
-          <h2 className="text-2xl font-semibold text-card-foreground mb-2">
-            Connect Your Stack Overflow Account
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            Link your Stack Overflow profile to track your questions, answers, and reputation
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 -m-8 p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Hero Section */}
+        <div className="text-center py-12 mb-8">
+          <div className="mb-8">
+            {isClient && <BarChart3 className="h-20 w-20 text-orange-500 mx-auto mb-6" />}
+            <h1 className="text-4xl font-bold text-foreground mb-4">
+              Connect Your Stack Overflow Account
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Unlock powerful analytics and insights from your Stack Overflow activity. 
+              Track your progress, monitor your impact, and grow your developer reputation.
+            </p>
+          </div>
+
+          {/* Benefits Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+              {isClient && <HelpCircle className="h-10 w-10 text-blue-600 mx-auto mb-4" />}
+              <h3 className="font-semibold text-foreground mb-2">Track Questions</h3>
+              <p className="text-sm text-muted-foreground">
+                Monitor your questions, views, votes, and answer rates automatically
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+              {isClient && <MessageCircle className="h-10 w-10 text-green-600 mx-auto mb-4" />}
+              <h3 className="font-semibold text-foreground mb-2">Answer Analytics</h3>
+              <p className="text-sm text-muted-foreground">
+                Track acceptance rates, upvotes, and community engagement
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+              {isClient && <Trophy className="h-10 w-10 text-orange-600 mx-auto mb-4" />}
+              <h3 className="font-semibold text-foreground mb-2">Reputation Growth</h3>
+              <p className="text-sm text-muted-foreground">
+                Monitor badges, reputation changes, and achievement milestones
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+              {isClient && <TrendingUp className="h-10 w-10 text-purple-600 mx-auto mb-4" />}
+              <h3 className="font-semibold text-foreground mb-2">Impact Analysis</h3>
+              <p className="text-sm text-muted-foreground">
+                Analyze contribution patterns and community influence over time
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-4 mb-6">
-          <div className="flex items-center justify-center text-sm text-muted-foreground">
-            {isClient && <HelpCircle className="h-4 w-4 mr-2 text-blue-600" />}
-            Track your questions and their performance automatically
-          </div>
-          <div className="flex items-center justify-center text-sm text-muted-foreground">
-            {isClient && <MessageCircle className="h-4 w-4 mr-2 text-green-600" />}
-            Monitor your answers and acceptance rates
-          </div>
-          <div className="flex items-center justify-center text-sm text-muted-foreground">
-            {isClient && <Trophy className="h-4 w-4 mr-2 text-orange-600" />}
-            View your badges and reputation growth
-          </div>
-          <div className="flex items-center justify-center text-sm text-muted-foreground">
-            {isClient && <TrendingUp className="h-4 w-4 mr-2 text-purple-600" />}
-            Analyze your contribution patterns and impact
-          </div>
-        </div>
-
-        <div className="bg-accent/30 rounded-lg p-4 mb-6">
-          <h3 className="font-medium text-foreground mb-2">What you'll get:</h3>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Real-time reputation and badge tracking</li>
-            <li>• Question and answer performance analytics</li>
-            <li>• Tag-based contribution insights</li>
-            <li>• Community engagement metrics</li>
-            <li>• Automated activity synchronization</li>
-          </ul>
-        </div>
-
-        {/* User Search */}
-        <div className="mb-6">
-          <div className="flex gap-2 mb-4">
-            <input
-              type="text"
-              placeholder="Enter your Stack Overflow display name..."
-              className="flex-1 px-4 py-2 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground"
-              value={userSearchQuery}
-              onChange={handleSearchInputChange}
-              onKeyPress={handleSearchInputKeyPress}
-              disabled={connectionStatus === 'connecting'}
-            />
-            <button
-              onClick={handleUserSearch}
-              disabled={!userSearchQuery.trim() || connectionStatus === 'connecting'}
-              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
-            >
-              {connectionStatus === 'connecting' ? 'Connecting...' : 'Search'}
-            </button>
+        {/* Connection Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border p-8 mb-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-semibold text-foreground mb-2">
+              Get Started in 2 Easy Steps
+            </h2>
+            <p className="text-muted-foreground">
+              Find and connect your Stack Overflow profile to start tracking
+            </p>
           </div>
 
-          {searchResults.length > 0 && (
-            <div className="bg-background rounded-lg border p-4">
-              <h4 className="font-medium text-foreground mb-3">Select your profile:</h4>
-              <div className="space-y-2">
-                {searchResults.slice(0, 5).map((user) => (
-                  <div
-                    key={user.user_id}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-accent/50 cursor-pointer border"
-                    onClick={() => connectionStatus !== 'connecting' && handleConnectUser(user.user_id.toString())}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <img
-                        src={user.profile_image}
-                        alt={user.display_name}
-                        className="h-10 w-10 rounded-full"
-                      />
-                      <div>
-                        <div className="font-medium text-foreground">{user.display_name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {formatNumber(user.reputation)} reputation
+          {/* Steps */}
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-orange-600 font-bold text-xl mx-auto mb-4">
+                1
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">Search Your Profile</h3>
+              <p className="text-sm text-muted-foreground">
+                Enter your Stack Overflow display name to find your profile
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-600 font-bold text-xl mx-auto mb-4">
+                2
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">Connect & Analyze</h3>
+              <p className="text-sm text-muted-foreground">
+                Select your profile and start tracking your Stack Overflow activity
+              </p>
+            </div>
+          </div>
+
+          {/* Search Section */}
+          <div className="max-w-2xl mx-auto">
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Stack Overflow Display Name
+              </label>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  placeholder="e.g., Jon Skeet, Gordon Linoff, or your display name..."
+                  className="flex-1 px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-background text-foreground text-lg"
+                  value={userSearchQuery}
+                  onChange={handleSearchInputChange}
+                  onKeyPress={handleSearchInputKeyPress}
+                  disabled={connectionStatus === 'connecting'}
+                />
+                <button
+                  onClick={handleUserSearch}
+                  disabled={!userSearchQuery.trim() || connectionStatus === 'connecting'}
+                  className="px-6 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-lg"
+                >
+                  {connectionStatus === 'connecting' ? (
+                    <div className="flex items-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Searching...
+                    </div>
+                  ) : (
+                    'Search'
+                  )}
+                </button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                💡 Tip: Try popular users like "Jon Skeet" or "Gordon Linoff" to see how it works
+              </p>
+            </div>
+
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+              <div className="bg-background rounded-lg border p-6 mb-6">
+                <h4 className="font-semibold text-foreground mb-4 flex items-center">
+                  {isClient && <Search className="h-5 w-5 mr-2" />}
+                  Found {searchResults.length} profiles - Select yours:
+                </h4>
+                <div className="space-y-3">
+                  {searchResults.slice(0, 5).map((user) => (
+                    <div
+                      key={user.user_id}
+                      className="flex items-center justify-between p-4 rounded-lg hover:bg-accent/50 cursor-pointer border transition-all hover:shadow-md"
+                      onClick={() => connectionStatus !== 'connecting' && handleConnectUser(user.user_id.toString())}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <img
+                          src={user.profile_image}
+                          alt={user.display_name}
+                          className="h-12 w-12 rounded-full border-2 border-orange-200"
+                        />
+                        <div>
+                          <div className="font-semibold text-foreground text-lg">{user.display_name}</div>
+                          <div className="text-muted-foreground flex items-center">
+                            {isClient && <Trophy className="h-4 w-4 mr-1 text-orange-500" />}
+                            <span className="font-medium text-orange-600">{formatNumber(user.reputation)}</span>
+                            <span className="ml-1">reputation</span>
+                          </div>
                         </div>
                       </div>
+                      <button 
+                        className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                          connectionStatus === 'connecting' 
+                            ? 'bg-gray-400 text-white cursor-not-allowed' 
+                            : 'bg-orange-500 hover:bg-orange-600 text-white hover:shadow-md'
+                        }`}
+                        disabled={connectionStatus === 'connecting'}
+                      >
+                        {connectionStatus === 'connecting' ? 'Connecting...' : 'Connect Account'}
+                      </button>
                     </div>
-                    <button 
-                      className={`px-3 py-1 text-sm rounded transition-colors ${
-                        connectionStatus === 'connecting' 
-                          ? 'bg-gray-400 text-white cursor-not-allowed' 
-                          : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      }`}
-                      disabled={connectionStatus === 'connecting'}
-                    >
-                      {connectionStatus === 'connecting' ? 'Connecting...' : 'Connect'}
-                    </button>
+                  ))}
+                </div>
+                {searchResults.length > 5 && (
+                  <p className="text-sm text-muted-foreground mt-3 text-center">
+                    Showing top 5 results. Refine your search for more specific results.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Status Messages */}
+            {connectionStatus === 'success' && (
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800 mb-6">
+                <div className="flex items-center">
+                  {isClient && <Trophy className="h-6 w-6 text-green-600 mr-3" />}
+                  <div>
+                    <div className="font-semibold text-green-700 dark:text-green-300">
+                      Successfully Connected!
+                    </div>
+                    <div className="text-sm text-green-600 dark:text-green-400">
+                      Your Stack Overflow account is now connected. Loading your dashboard...
+                    </div>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Connection Status Messages */}
-          {connectionStatus === 'success' && (
-            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-              <div className="flex items-center text-sm">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                <span className="text-green-700 dark:text-green-300 font-medium">
-                  Successfully connected your Stack Overflow account!
-                </span>
+            {connectionStatus === 'error' && connectionError && (
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 mb-6">
+                <div className="flex items-center">
+                  {isClient && <ExternalLink className="h-6 w-6 text-red-600 mr-3" />}
+                  <div>
+                    <div className="font-semibold text-red-700 dark:text-red-300">
+                      Connection Failed
+                    </div>
+                    <div className="text-sm text-red-600 dark:text-red-400">
+                      {connectionError}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
-
-          {connectionStatus === 'error' && connectionError && (
-            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
-              <div className="flex items-center text-sm">
-                <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                <span className="text-red-700 dark:text-red-300 font-medium">
-                  {connectionError}
-                </span>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        <div className="mt-6 text-sm text-muted-foreground">
-          <p>
-            You're currently signed in as: <strong>{session?.user?.email}</strong>
+        {/* Features Preview */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border p-8">
+          <h3 className="text-xl font-semibold text-foreground mb-6 text-center">
+            What You'll See After Connecting
+          </h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4">
+                {isClient && <BarChart3 className="h-12 w-12 text-blue-600 mx-auto" />}
+              </div>
+              <h4 className="font-semibold text-foreground mb-2">Activity Dashboard</h4>
+              <p className="text-sm text-muted-foreground">
+                Real-time view of your questions, answers, and community interactions
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 mb-4">
+                {isClient && <TrendingUp className="h-12 w-12 text-green-600 mx-auto" />}
+              </div>
+              <h4 className="font-semibold text-foreground mb-2">Performance Metrics</h4>
+              <p className="text-sm text-muted-foreground">
+                Track your reputation growth, answer acceptance rates, and impact
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 mb-4">
+                {isClient && <Award className="h-12 w-12 text-purple-600 mx-auto" />}
+              </div>
+              <h4 className="font-semibold text-foreground mb-2">Badge & Achievement Tracking</h4>
+              <p className="text-sm text-muted-foreground">
+                Monitor your badges, milestones, and community recognition
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-8 py-6">
+          <p className="text-muted-foreground mb-2">
+            Currently signed in as: <strong>{session?.user?.email}</strong>
           </p>
-          <p className="mt-2">
-            To access Stack Overflow analytics, please connect your Stack Overflow account
+          <p className="text-sm text-muted-foreground">
+            Your connection is stored securely and privately. Only you can see your Stack Overflow analytics.
           </p>
         </div>
       </div>
@@ -328,20 +441,7 @@ const StackOverflowPage = () => {
   if (isAuthenticated && !isStackOverflowUser) {
     return (
       <Layout>
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center">
-                {isClient && <BarChart3 className="h-6 w-6 mr-2 text-orange-500" />}
-                Stack Overflow Dashboard
-              </h1>
-              <p className="text-muted-foreground">Track your questions, answers, and reputation</p>
-            </div>
-          </div>
-
-          <StackOverflowConnectionPrompt />
-        </div>
+        <StackOverflowConnectionPrompt />
       </Layout>
     );
   }
