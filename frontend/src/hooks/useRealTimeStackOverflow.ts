@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { useMutation } from '@apollo/client';
-import { UPDATE_PROFILE } from '@/lib/graphql/queries';
+// import { useMutation } from '@apollo/client';
+// import { UPDATE_PROFILE } from '@/lib/graphql/queries';
 import { 
   stackOverflowAPI, 
   StackOverflowUser, 
@@ -28,11 +28,12 @@ interface UseRealTimeStackOverflowReturn {
   canFetch: boolean;
   searchUsers: (displayName: string) => Promise<StackOverflowUser[]>;
   connectUser: (userId: string) => Promise<void>;
+  disconnectUser: () => void;
 }
 
 export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealTimeStackOverflowReturn => {
-  const { data: session, status, update } = useSession();
-  const [updateProfile] = useMutation(UPDATE_PROFILE);
+  const { data: session, status } = useSession();
+  // const [updateProfile] = useMutation(UPDATE_PROFILE);
   
   // State management
   const [profile, setProfile] = useState<StackOverflowUser | null>(null);
@@ -45,24 +46,31 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Get Stack Overflow ID from localStorage or prop
+  const getStoredStackOverflowId = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(`stackoverflow_id_${session?.user?.email}`);
+      return stored;
+    }
+    return null;
+  }, [session?.user?.email]);
+
+  const currentStackOverflowId = stackOverflowUserId || getStoredStackOverflowId();
+
   // Check if user has Stack Overflow connection
   const isStackOverflowUser = Boolean(
-    session?.user && (
-      stackOverflowUserId ||
-      (session.user as any)?.stackOverflowId ||
-      (session.user as any)?.stackOverflowUserId
-    )
+    session?.user && currentStackOverflowId
   );
 
   // Check if we can fetch data
   const canFetch = Boolean(
     session?.user && 
     status === 'authenticated' && 
-    (stackOverflowUserId || (session.user as any)?.stackOverflowId || (session.user as any)?.stackOverflowUserId)
+    currentStackOverflowId
   );
 
   // Get the actual user ID to use
-  const userId = stackOverflowUserId || (session?.user as any)?.stackOverflowId || (session?.user as any)?.stackOverflowUserId;
+  const userId = currentStackOverflowId;
 
   const fetchStackOverflowData = useCallback(async () => {
     if (!canFetch || !userId) {
@@ -160,44 +168,49 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
     }
   }, []);
 
-  // Connect user function - saves Stack Overflow ID to user profile
+  // Connect user function - saves Stack Overflow ID to localStorage
   const connectUser = useCallback(async (userId: string): Promise<void> => {
     try {
       setLoading(true);
       
-      // Update user profile with Stack Overflow ID
-      const result = await updateProfile({
-        variables: {
-          input: {
-            stackoverflowId: userId
-          }
-        }
-      });
-
-      if (result.data?.updateProfile) {
-        // Update the session to reflect the new Stack Overflow connection
-        await update({
-          ...session,
-          user: {
-            ...session?.user,
-            stackoverflowId: userId,
-            stackOverflowId: userId // Also add alternative property name for compatibility
-          }
-        });
-
-        // Give a small delay to ensure session is updated
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        // Fetch Stack Overflow data with the new user ID
-        await fetchStackOverflowData();
+      // Store Stack Overflow ID in localStorage
+      if (typeof window !== 'undefined' && session?.user?.email) {
+        localStorage.setItem(`stackoverflow_id_${session.user.email}`, userId);
+        
+        // Store additional metadata
+        localStorage.setItem(`stackoverflow_connected_at_${session.user.email}`, new Date().toISOString());
       }
+
+      // Give a small delay to ensure storage is updated
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Fetch Stack Overflow data with the new user ID
+      await fetchStackOverflowData();
     } catch (error) {
       console.error('Error connecting Stack Overflow user:', error);
       throw error;
     } finally {
       setLoading(false);
     }
-  }, [updateProfile, session, update, fetchStackOverflowData]);
+  }, [session?.user?.email, fetchStackOverflowData]);
+
+  // Disconnect user function - removes Stack Overflow ID from localStorage
+  const disconnectUser = useCallback(() => {
+    if (typeof window !== 'undefined' && session?.user?.email) {
+      localStorage.removeItem(`stackoverflow_id_${session.user.email}`);
+      localStorage.removeItem(`stackoverflow_connected_at_${session.user.email}`);
+      
+      // Clear all state
+      setProfile(null);
+      setQuestions([]);
+      setAnswers([]);
+      setComments([]);
+      setBadges([]);
+      setActivities([]);
+      setStats(null);
+      setError(null);
+    }
+  }, [session?.user?.email]);
 
   // Fetch data when dependencies change
   useEffect(() => {
@@ -234,6 +247,7 @@ export const useRealTimeStackOverflow = (stackOverflowUserId?: string): UseRealT
     isStackOverflowUser,
     canFetch,
     searchUsers,
-    connectUser
+    connectUser,
+    disconnectUser
   };
 };

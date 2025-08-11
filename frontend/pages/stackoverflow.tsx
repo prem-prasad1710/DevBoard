@@ -48,7 +48,8 @@ const StackOverflowPage = () => {
     isStackOverflowUser, 
     canFetch,
     searchUsers,
-    connectUser
+    connectUser,
+    disconnectUser
   } = useRealTimeStackOverflow();
 
   useEffect(() => {
@@ -145,25 +146,26 @@ const StackOverflowPage = () => {
     }
   };
 
-  const handleConnectUser = async (userId: string) => {
+    const handleConnectUser = async (userId: string) => {
+    setConnectionStatus('connecting');
+    setConnectionError('');
+    
     try {
-      setConnectionStatus('connecting');
-      setConnectionError('');
-      
       await connectUser(userId);
-      
       setConnectionStatus('success');
       setSearchResults([]);
       setUserSearchQuery('');
       
-      // Reset status after 3 seconds
-      setTimeout(() => setConnectionStatus('idle'), 3000);
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setConnectionStatus('idle');
+      }, 3000);
     } catch (error) {
       console.error('Error connecting user:', error);
       setConnectionStatus('error');
-      setConnectionError(error instanceof Error ? error.message : 'Failed to connect Stack Overflow account');
+      setConnectionError('Failed to connect Stack Overflow account. Please try again.');
       
-      // Reset error status after 5 seconds
+      // Clear error message after 5 seconds
       setTimeout(() => {
         setConnectionStatus('idle');
         setConnectionError('');
@@ -398,6 +400,12 @@ const StackOverflowPage = () => {
                   {isClient && <ExternalLink className="h-4 w-4 mr-1" />}
                   View Profile
                 </a>
+                <button
+                  onClick={disconnectUser}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-destructive hover:text-destructive/80 border border-destructive/20 rounded-lg hover:bg-destructive/10"
+                >
+                  Disconnect
+                </button>
               </div>
             </div>
 
