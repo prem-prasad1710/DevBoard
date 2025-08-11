@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
@@ -21,6 +21,247 @@ const RefreshCw = dynamic(() => import('lucide-react').then(mod => ({ default: m
 const BarChart3 = dynamic(() => import('lucide-react').then(mod => ({ default: mod.BarChart3 })), { ssr: false });
 const HelpCircle = dynamic(() => import('lucide-react').then(mod => ({ default: mod.HelpCircle })), { ssr: false });
 const Activity = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Activity })), { ssr: false });
+
+// Stack Overflow Connection Component - extracted outside main component to prevent re-renders
+interface StackOverflowConnectionPromptProps {
+  userSearchQuery: string;
+  searchResults: any[];
+  connectionStatus: 'idle' | 'connecting' | 'success' | 'error';
+  connectionError: string;
+  isClient: boolean;
+  onSearchInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSearchInputKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onUserSearch: () => void;
+  onConnectUser: (userId: string) => void;
+}
+
+const StackOverflowConnectionPrompt: React.FC<StackOverflowConnectionPromptProps> = React.memo(({
+  userSearchQuery,
+  searchResults,
+  connectionStatus,
+  connectionError,
+  isClient,
+  onSearchInputChange,
+  onSearchInputKeyPress,
+  onUserSearch,
+  onConnectUser
+}) => (
+  <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 -m-8 p-8">
+    <div className="max-w-4xl mx-auto">
+      {/* Hero Section */}
+      <div className="text-center py-12 mb-8">
+        <div className="mb-8">
+          {isClient && <BarChart3 className="h-20 w-20 text-orange-500 mx-auto mb-6" />}
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            Connect Your Stack Overflow Account
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Track your questions, answers, reputation, and community engagement in real-time
+          </p>
+        </div>
+
+        {/* Benefits Grid */}
+        <div className="grid md:grid-cols-3 gap-8 mb-12 max-w-4xl mx-auto">
+          <div className="text-center p-6 bg-background/80 backdrop-blur-sm rounded-xl border shadow-sm">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 font-bold text-xl mx-auto mb-4">
+              {isClient && <Activity className="h-6 w-6" />}
+            </div>
+            <h3 className="font-semibold text-foreground mb-2">Real-time Tracking</h3>
+            <p className="text-sm text-muted-foreground">
+              Monitor your Stack Overflow activity, reputation changes, and new achievements
+            </p>
+          </div>
+          <div className="text-center p-6 bg-background/80 backdrop-blur-sm rounded-xl border shadow-sm">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-600 font-bold text-xl mx-auto mb-4">
+              {isClient && <BarChart3 className="h-6 w-6" />}
+            </div>
+            <h3 className="font-semibold text-foreground mb-2">Analytics & Insights</h3>
+            <p className="text-sm text-muted-foreground">
+              Get detailed analytics on your questions, answers, and community impact
+            </p>
+          </div>
+          <div className="text-center p-6 bg-background/80 backdrop-blur-sm rounded-xl border shadow-sm">
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-orange-600 font-bold text-xl mx-auto mb-4">
+              {isClient && <Award className="h-6 w-6" />}
+            </div>
+            <h3 className="font-semibold text-foreground mb-2">Achievement Tracking</h3>
+            <p className="text-sm text-muted-foreground">
+              Monitor badges, reputation changes, and achievement milestones
+            </p>
+          </div>
+        </div>
+
+        {/* Step-by-step Guide */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12 max-w-2xl mx-auto">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center text-orange-600 font-bold text-xl mx-auto mb-4">
+              1
+            </div>
+            <h3 className="font-semibold text-foreground mb-2">Search Your Profile</h3>
+            <p className="text-sm text-muted-foreground">
+              Enter your Stack Overflow display name to find your profile
+            </p>
+          </div>
+          <div className="text-center">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-600 font-bold text-xl mx-auto mb-4">
+              2
+            </div>
+            <h3 className="font-semibold text-foreground mb-2">Connect & Analyze</h3>
+            <p className="text-sm text-muted-foreground">
+              Select your profile and start tracking your Stack Overflow activity
+            </p>
+          </div>
+        </div>
+
+        {/* Search Section */}
+        <div className="max-w-2xl mx-auto">
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Stack Overflow Display Name
+            </label>
+            <div className="flex gap-3">
+              <input
+                key="stackoverflow-search-input"
+                type="text"
+                placeholder="e.g., Jon Skeet, Gordon Linoff, or your display name..."
+                className="flex-1 px-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-background text-foreground text-lg"
+                value={userSearchQuery}
+                onChange={onSearchInputChange}
+                onKeyPress={onSearchInputKeyPress}
+                disabled={connectionStatus === 'connecting'}
+              />
+              <button
+                onClick={onUserSearch}
+                disabled={!userSearchQuery.trim() || connectionStatus === 'connecting'}
+                className="px-6 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-lg"
+              >
+                {connectionStatus === 'connecting' ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Searching...
+                  </div>
+                ) : (
+                  'Search'
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Connection Error */}
+          {connectionStatus === 'error' && connectionError && (
+            <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  {isClient && <HelpCircle className="h-5 w-5 text-destructive" />}
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-destructive">
+                    {connectionError}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Search Results */}
+          {searchResults.length > 0 && (
+            <div className="bg-background/90 backdrop-blur-sm rounded-xl border shadow-lg p-6 mb-8">
+              <h3 className="text-lg font-semibold text-foreground mb-4">
+                Select Your Profile ({searchResults.length} found)
+              </h3>
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {searchResults.map((user) => (
+                  <div
+                    key={user.user_id}
+                    className="flex items-center justify-between p-4 rounded-lg hover:bg-accent/50 cursor-pointer border transition-all hover:shadow-md"
+                    onClick={() => connectionStatus !== 'connecting' && onConnectUser(user.user_id.toString())}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={user.profile_image || '/default-avatar.png'}
+                        alt={user.display_name || 'User'}
+                        className="h-12 w-12 rounded-full border-2 border-orange-200"
+                      />
+                      <div>
+                        <div className="font-semibold text-foreground text-lg">{user.display_name || 'Unknown User'}</div>
+                        <div className="text-muted-foreground flex items-center">
+                          {isClient && <Trophy className="h-4 w-4 mr-1 text-orange-500" />}
+                          <span className="font-medium text-orange-600">{user.reputation ? (user.reputation >= 1000 ? `${(user.reputation / 1000).toFixed(1)}k` : user.reputation.toString()) : '0'}</span>
+                          <span className="ml-1">reputation</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      className="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                      disabled={connectionStatus === 'connecting'}
+                    >
+                      {connectionStatus === 'connecting' ? 'Connecting...' : 'Connect'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Enhanced Features Section */}
+          <div className="bg-background/90 backdrop-blur-sm rounded-xl border shadow-lg p-8 mb-8">
+            <h3 className="text-xl font-semibold text-foreground mb-6 text-center">
+              What You'll Get After Connecting
+            </h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
+                  {isClient && <MessageSquare className="h-4 w-4 text-blue-600" />}
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground mb-1">Questions & Answers</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Track all your questions and answers with real-time score updates
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                  {isClient && <TrendingUp className="h-4 w-4 text-green-600" />}
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground mb-1">Reputation Tracking</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Monitor your reputation changes and identify growth patterns
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center">
+                  {isClient && <Award className="h-4 w-4 text-orange-600" />}
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground mb-1">Badge Collection</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Monitor your badges, milestones, and community recognition
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-purple-100 dark:bg-purple-900/20 rounded-full flex items-center justify-center">
+                  {isClient && <Activity className="h-4 w-4 text-purple-600" />}
+                </div>
+                <div>
+                  <h4 className="font-medium text-foreground mb-1">Activity Timeline</h4>
+                  <p className="text-sm text-muted-foreground">
+                    See your recent Stack Overflow activity in chronological order
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+));
+
+StackOverflowConnectionPrompt.displayName = 'StackOverflowConnectionPrompt';
 
 const StackOverflowPage = () => {
   const router = useRouter();
@@ -138,6 +379,17 @@ const StackOverflowPage = () => {
     });
   };
 
+  const handleUserSearch = useCallback(async () => {
+    if (!userSearchQuery.trim()) return;
+    
+    try {
+      const results = await searchUsers(userSearchQuery);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Error searching users:', error);
+    }
+  }, [userSearchQuery, searchUsers]);
+
     const handleConnectUser = useCallback(async (userId: string) => {
     setConnectionStatus('connecting');
     setConnectionError('');
@@ -165,37 +417,6 @@ const StackOverflowPage = () => {
     }
   }, [connectUser]);
 
-  // Stable refs for search functionality
-  const userSearchQueryRef = useRef(userSearchQuery);
-  const searchUsersRef = useRef(searchUsers);
-  const setSearchResultsRef = useRef(setSearchResults);
-
-  // Update refs when values change
-  useEffect(() => {
-    userSearchQueryRef.current = userSearchQuery;
-  }, [userSearchQuery]);
-
-  useEffect(() => {
-    searchUsersRef.current = searchUsers;
-  }, [searchUsers]);
-
-  useEffect(() => {
-    setSearchResultsRef.current = setSearchResults;
-  }, [setSearchResults]);
-
-  // Stable search function
-  const handleUserSearchStable = useCallback(async () => {
-    const query = userSearchQueryRef.current;
-    if (!query.trim()) return;
-    
-    try {
-      const results = await searchUsersRef.current(query);
-      setSearchResultsRef.current(results);
-    } catch (error) {
-      console.error('Error searching users:', error);
-    }
-  }, []);
-
   // Memoized handlers to prevent unnecessary re-renders
   const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -203,11 +424,11 @@ const StackOverflowPage = () => {
   }, []);
 
   const handleSearchInputKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && userSearchQueryRef.current.trim()) {
+    if (e.key === 'Enter' && userSearchQuery.trim()) {
       e.preventDefault();
-      handleUserSearchStable();
+      handleUserSearch();
     }
-  }, [handleUserSearchStable]);
+  }, [userSearchQuery, handleUserSearch]);
 
   // Stack Overflow Connection Component for non-connected users
   const StackOverflowConnectionPrompt = React.memo(() => (
@@ -310,7 +531,7 @@ const StackOverflowPage = () => {
                   disabled={connectionStatus === 'connecting'}
                 />
                 <button
-                  onClick={handleUserSearchStable}
+                  onClick={handleUserSearch}
                   disabled={!userSearchQuery.trim() || connectionStatus === 'connecting'}
                   className="px-6 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-lg"
                 >
@@ -467,7 +688,17 @@ const StackOverflowPage = () => {
   if (isAuthenticated && !isStackOverflowUser) {
     return (
       <Layout>
-        <StackOverflowConnectionPrompt />
+        <StackOverflowConnectionPrompt
+          userSearchQuery={userSearchQuery}
+          searchResults={searchResults}
+          connectionStatus={connectionStatus}
+          connectionError={connectionError}
+          isClient={isClient}
+          onSearchInputChange={handleSearchInputChange}
+          onSearchInputKeyPress={handleSearchInputKeyPress}
+          onUserSearch={handleUserSearch}
+          onConnectUser={handleConnectUser}
+        />
       </Layout>
     );
   }
