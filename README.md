@@ -4,7 +4,7 @@
 
 A comprehensive, modern developer dashboard for tracking your coding journey, managing projects, and accelerating your growth. Built with React.js, Next.js, Node.js, GraphQL, and MongoDB.
 
-![DevBoard Screenshot](https://via.placeholder.com/800x600?text=DevBoard+Dashboard)
+![DevBoard Screenshot](devboard.png)
 
 ## 🚀 Features
 
