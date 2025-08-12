@@ -31,6 +31,7 @@ interface LayoutProps {
   children: React.ReactNode;
   showMobileHeader?: boolean;
   contentPadding?: "none" | "sm" | "md" | "lg";
+  onOpenSidebar?: () => void;
 }
 
 const navigation = [
@@ -49,7 +50,8 @@ const navigation = [
 export default function Layout({ 
   children, 
   showMobileHeader = true,
-  contentPadding = "md"
+  contentPadding = "md",
+  onOpenSidebar
 }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [navbarCollapsed, setNavbarCollapsed] = useState(false);
@@ -159,44 +161,6 @@ export default function Layout({
                                 : 'text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-white/30 dark:hover:bg-gray-800/30 backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-gray-700/20 hover:shadow-sm',
                               navbarCollapsed ? 'justify-center' : ''
                             )}
-                          >
-                            <item.icon className={cn(
-                              "h-5 w-5 flex-shrink-0 transition-all duration-300",
-                              isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300"
-                            )} />
-                            {!navbarCollapsed && (
-                              <span className="truncate">{item.name}</span>
-                            )}
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </div>
-      )}
-
-      {/* Main content */}
-      <div className={cn(
-        "flex flex-1 flex-col",
-        !isHomePage && showMobileHeader && "lg:pl-72",
-        navbarCollapsed && !isHomePage && "lg:pl-16"
-      )}>
-        <main className={cn(
-          "flex-1 min-h-screen",
-          getContentPadding()
-        )}>
-          {children}
-        </main>
-      </div>
-    </div>
-  );
-}
-                            title={navbarCollapsed && !isHomePage ? item.name : undefined}
-                            onClick={isHomePage ? () => setSidebarOpen(false) : undefined}
                           >
                             <item.icon className={cn(
                               "h-5 w-5 flex-shrink-0 transition-all duration-300",
