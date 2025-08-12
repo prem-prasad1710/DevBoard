@@ -130,9 +130,7 @@ export interface StackOverflowActivity {
 }
 
 export class StackOverflowAPIService {
-  private readonly BASE_URL = 'https://api.stackexchange.com/2.3';
-  private readonly SITE = 'stackoverflow';
-  private readonly KEY = process.env.NEXT_PUBLIC_STACKOVERFLOW_API_KEY;
+  private readonly PROXY_URL = '/api/stackoverflow/proxy';
 
   private async fetchWithAuth(endpoint: string, params: Record<string, any> = {}) {
     const session = await getSession();
@@ -141,14 +139,11 @@ export class StackOverflowAPIService {
       throw new Error('User not authenticated');
     }
 
-    const defaultParams = {
-      site: this.SITE,
-      key: this.KEY,
-      ...params
-    };
-
+    // Build query parameters for the proxy
     const searchParams = new URLSearchParams();
-    Object.entries(defaultParams).forEach(([key, value]) => {
+    searchParams.append('endpoint', endpoint);
+    
+    Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         searchParams.append(key, value.toString());
       }
@@ -159,7 +154,7 @@ export class StackOverflowAPIService {
     const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
     try {
-      const response = await fetch(`${this.BASE_URL}${endpoint}?${searchParams.toString()}`, {
+      const response = await fetch(`${this.PROXY_URL}?${searchParams.toString()}`, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -170,7 +165,8 @@ export class StackOverflowAPIService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`Stack Overflow API error: ${response.status} ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Stack Overflow API error: ${response.status} ${response.statusText} - ${errorData.error || 'Unknown error'}`);
       }
 
       const data = await response.json();
@@ -400,6 +396,10 @@ export class StackOverflowAPIService {
 
   async searchUserByDisplayName(displayName: string): Promise<StackOverflowUser[]> {
     try {
+      if (!displayName || displayName.trim().length === 0) {
+        return [];
+      }
+
       const data = await this.fetchWithAuth('/users', {
         inname: displayName,
         sort: 'reputation',
@@ -411,6 +411,17 @@ export class StackOverflowAPIService {
       return data.items || [];
     } catch (error) {
       console.error('Error searching Stack Overflow users:', error);
+      
+      // If it's an authentication error, throw it up so the UI can handle it
+      if (error instanceof Error && error.message.includes('not authenticated')) {
+        throw error;
+      }
+      
+      // For API errors, return empty array but log the details
+      if (error instanceof Error && error.message.includes('API error')) {
+        console.warn('Stack Overflow API issue, returning empty results:', error.message);
+      }
+      
       return [];
     }
   }
