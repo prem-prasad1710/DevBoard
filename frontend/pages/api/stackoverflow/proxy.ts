@@ -1,15 +1,22 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
 
 const STACK_EXCHANGE_BASE_URL = 'https://api.stackexchange.com/2.3';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Verify user is authenticated
-    const session = await getSession({ req });
-    if (!session?.user) {
-      return res.status(401).json({ error: 'User not authenticated' });
-    }
+    // Verify user is authenticated (optional for Stack Exchange public API)
+    const session = await getServerSession(req, res, authOptions);
+    
+    // Log session status for debugging
+    console.log('Session status:', !!session?.user, session?.user?.email);
+    
+    // For now, we'll allow unauthenticated requests to Stack Exchange API
+    // since it's a public API and doesn't require user authentication
+    // if (!session?.user) {
+    //   return res.status(401).json({ error: 'User not authenticated' });
+    // }
 
     if (req.method !== 'GET') {
       return res.status(405).json({ error: 'Method not allowed' });

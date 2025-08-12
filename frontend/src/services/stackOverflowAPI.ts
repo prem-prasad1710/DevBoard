@@ -133,12 +133,8 @@ export class StackOverflowAPIService {
   private readonly PROXY_URL = '/api/stackoverflow/proxy';
 
   private async fetchWithAuth(endpoint: string, params: Record<string, any> = {}) {
-    const session = await getSession();
+    // Note: Authentication is optional for Stack Exchange public API
     
-    if (!session?.user) {
-      throw new Error('User not authenticated');
-    }
-
     // Build query parameters for the proxy
     const searchParams = new URLSearchParams();
     searchParams.append('endpoint', endpoint);
