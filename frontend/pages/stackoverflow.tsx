@@ -211,7 +211,13 @@ const StackOverflowPage = () => {
 
   // Stack Overflow Connection Component for non-connected users
   const StackOverflowConnectionPrompt = React.memo(() => (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 -m-8 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50/30 to-blue-50/30 dark:from-gray-900/50 dark:to-gray-800/50 backdrop-blur-3xl -m-8 p-8">
+      {/* Floating background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-500/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/3 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+      </div>
       <div className="max-w-4xl mx-auto">
         {/* Hero Section */}
         <div className="text-center py-12 mb-8">
@@ -228,28 +234,28 @@ const StackOverflowPage = () => {
 
           {/* Benefits Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 rounded-xl p-6 shadow-xl border border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-300">
               {isClient && <HelpCircle className="h-10 w-10 text-blue-600 mx-auto mb-4" />}
               <h3 className="font-semibold text-foreground mb-2">Track Questions</h3>
               <p className="text-sm text-muted-foreground">
                 Monitor your questions, views, votes, and answer rates automatically
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 rounded-xl p-6 shadow-xl border border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-300">
               {isClient && <MessageCircle className="h-10 w-10 text-green-600 mx-auto mb-4" />}
               <h3 className="font-semibold text-foreground mb-2">Answer Analytics</h3>
               <p className="text-sm text-muted-foreground">
                 Track acceptance rates, upvotes, and community engagement
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 rounded-xl p-6 shadow-xl border border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-300">
               {isClient && <Trophy className="h-10 w-10 text-orange-600 mx-auto mb-4" />}
               <h3 className="font-semibold text-foreground mb-2">Reputation Growth</h3>
               <p className="text-sm text-muted-foreground">
                 Monitor badges, reputation changes, and achievement milestones
               </p>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border">
+            <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 rounded-xl p-6 shadow-xl border border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-300">
               {isClient && <TrendingUp className="h-10 w-10 text-purple-600 mx-auto mb-4" />}
               <h3 className="font-semibold text-foreground mb-2">Impact Analysis</h3>
               <p className="text-sm text-muted-foreground">
@@ -260,7 +266,7 @@ const StackOverflowPage = () => {
         </div>
 
         {/* Connection Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border p-8 mb-8">
+        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 rounded-xl shadow-xl border border-white/20 dark:border-gray-700/20 p-8 mb-8 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-300">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-semibold text-foreground mb-2">
               Get Started in 2 Easy Steps
@@ -415,13 +421,13 @@ const StackOverflowPage = () => {
         </div>
 
         {/* Features Preview */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border p-8">
+        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 rounded-xl shadow-xl border border-white/20 dark:border-gray-700/20 p-8 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-300">
           <h3 className="text-xl font-semibold text-foreground mb-6 text-center">
             What You'll See After Connecting
           </h3>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="text-center">
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4">
+              <div className="bg-blue-50/70 dark:bg-blue-900/30 backdrop-blur-md rounded-xl p-4 mb-4 border border-blue-200/20 dark:border-blue-700/20">
                 {isClient && <BarChart3 className="h-12 w-12 text-blue-600 mx-auto" />}
               </div>
               <h4 className="font-semibold text-foreground mb-2">Activity Dashboard</h4>
@@ -430,7 +436,7 @@ const StackOverflowPage = () => {
               </p>
             </div>
             <div className="text-center">
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 mb-4">
+              <div className="bg-green-50/70 dark:bg-green-900/30 backdrop-blur-md rounded-xl p-4 mb-4 border border-green-200/20 dark:border-green-700/20">
                 {isClient && <TrendingUp className="h-12 w-12 text-green-600 mx-auto" />}
               </div>
               <h4 className="font-semibold text-foreground mb-2">Performance Metrics</h4>
@@ -439,7 +445,7 @@ const StackOverflowPage = () => {
               </p>
             </div>
             <div className="text-center">
-              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 mb-4">
+              <div className="bg-purple-50/70 dark:bg-purple-900/30 backdrop-blur-md rounded-xl p-4 mb-4 border border-purple-200/20 dark:border-purple-700/20">
                 {isClient && <Award className="h-12 w-12 text-purple-600 mx-auto" />}
               </div>
               <h4 className="font-semibold text-foreground mb-2">Badge & Achievement Tracking</h4>
@@ -565,7 +571,7 @@ const StackOverflowPage = () => {
 
         {/* Profile Stats */}
         {profile && (
-          <div className="bg-card rounded-lg shadow-sm border p-6 mb-6">
+          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 rounded-xl shadow-xl border border-white/20 dark:border-gray-700/20 p-6 mb-6 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
                 <img
@@ -726,7 +732,7 @@ const StackOverflowPage = () => {
             </div>
           ) : (
             filteredActivities.map((activity) => (
-              <div key={activity.id} className="bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow border p-6">
+              <div key={activity.id} className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 rounded-xl shadow-xl border border-white/20 dark:border-gray-700/20 p-6 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-300 hover:shadow-2xl">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center mb-2">
@@ -811,7 +817,7 @@ const StackOverflowPage = () => {
 
         {/* Stats Summary */}
         {stats && (
-          <div className="mt-8 bg-card rounded-lg shadow-sm border p-6">
+          <div className="mt-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 rounded-xl shadow-xl border border-white/20 dark:border-gray-700/20 p-6 hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-300">
             <h3 className="text-lg font-semibold text-card-foreground mb-4">
               Stack Overflow Statistics
             </h3>

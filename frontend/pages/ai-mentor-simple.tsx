@@ -93,9 +93,16 @@ const AIMentorPage = () => {
   const allMessages = chatHistory?.flatMap(chat => chat.messages) || [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-cyan-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 relative overflow-hidden">
+      {/* Floating Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-300/20 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-300/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-cyan-300/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
+      </div>
+
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 shadow-xl border-b border-white/20 dark:border-gray-700/20 relative z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
@@ -122,7 +129,7 @@ const AIMentorPage = () => {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white rounded-lg shadow-sm h-[calc(100vh-12rem)] flex flex-col">
+        <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 rounded-xl shadow-2xl h-[calc(100vh-12rem)] flex flex-col border border-white/20 dark:border-gray-700/20 relative z-10">
           {allMessages.length > 0 ? (
             <>
               {/* Messages */}
@@ -133,10 +140,10 @@ const AIMentorPage = () => {
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
+                      className={`max-w-xs lg:max-w-md px-4 py-3 rounded-xl backdrop-blur-md ${
                         message.role === 'user'
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
+                          ? 'bg-blue-600/90 text-white border border-blue-500/20 shadow-lg'
+                          : 'bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-gray-100 border border-white/20 dark:border-gray-600/20 shadow-lg'
                       }`}
                     >
                       <div className="flex items-center mb-1">
@@ -158,7 +165,7 @@ const AIMentorPage = () => {
                 ))}
                 {isSending && (
                   <div className="flex justify-start">
-                    <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-lg bg-gray-100 text-gray-900">
+                    <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-xl bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-gray-100 backdrop-blur-md border border-white/20 dark:border-gray-600/20 shadow-lg">
                       <div className="flex items-center">
                         <Bot className="h-4 w-4 mr-2" />
                         <span className="text-xs opacity-70">AI Mentor</span>
@@ -174,14 +181,14 @@ const AIMentorPage = () => {
               </div>
 
               {/* Message Input */}
-              <div className="p-4 border-t border-gray-200">
+              <div className="p-4 border-t border-white/30 dark:border-gray-700/30 backdrop-blur-md">
                 <div className="flex space-x-3">
                   <textarea
                     value={currentMessage}
                     onChange={(e) => setCurrentMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask your AI mentor anything..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="flex-1 px-4 py-2 border border-white/30 dark:border-gray-700/30 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white/50 dark:bg-gray-800/50 backdrop-blur-md text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                     rows={1}
                     disabled={isSending}
                   />
@@ -218,7 +225,7 @@ const AIMentorPage = () => {
                     <button
                       key={index}
                       onClick={() => setCurrentMessage(prompt.prompt)}
-                      className="p-3 text-left border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                      className="p-3 text-left border border-white/30 dark:border-gray-700/30 rounded-xl hover:border-blue-400/50 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 backdrop-blur-md bg-white/20 dark:bg-gray-800/20 shadow-lg"
                     >
                       <div className="flex items-center mb-2">
                         <prompt.icon className="h-4 w-4 text-blue-600 mr-2" />
@@ -237,7 +244,7 @@ const AIMentorPage = () => {
                     onChange={(e) => setCurrentMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask your AI mentor anything..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="flex-1 px-4 py-2 border border-white/30 dark:border-gray-700/30 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white/50 dark:bg-gray-800/50 backdrop-blur-md text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
                     rows={2}
                     disabled={isSending}
                   />

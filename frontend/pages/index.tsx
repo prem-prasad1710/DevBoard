@@ -116,9 +116,9 @@ const Dashboard = () => {
       case 'top-right':
         return 'absolute top-8 right-8 md:top-16 md:right-16';
       case 'left':
-        return 'absolute top-1/3 left-8 md:left-16 transform -translate-y-1/2'; // Moved up from top-1/2
+        return 'absolute top-4/3 left-8 md:left-16 transform -translate-y-1/2'; // Moved up from top-1/2
       case 'right':
-        return 'absolute top-1/3 right-8 md:right-16 transform -translate-y-1/2'; // Moved up from top-1/2
+        return 'absolute top-4/3 right-8 md:right-16 transform -translate-y-1/2'; // Moved up from top-1/2
       case 'bottom-left':
         return 'absolute bottom-8 left-8 md:bottom-16 md:left-16';
       case 'bottom-right':
@@ -138,9 +138,9 @@ const Dashboard = () => {
       case 'top-right':
         return `M85,25 Q${centerX},${centerY-15} ${centerX},${centerY}`;
       case 'left':
-        return `M15,35 Q${centerX-15},${centerY-10} ${centerX},${centerY}`; // Adjusted for higher position
+        return `M15,50 Q${centerX-15},${centerY-10} ${centerX},${centerY}`; // Adjusted for higher position
       case 'right':
-        return `M85,35 Q${centerX+15},${centerY-10} ${centerX},${centerY}`; // Adjusted for higher position
+        return `M85,50 Q${centerX+15},${centerY-10} ${centerX},${centerY}`; // Adjusted for higher position
       case 'bottom-left':
         return `M15,75 Q${centerX},${centerY+15} ${centerX},${centerY}`;
       case 'bottom-right':
@@ -193,7 +193,7 @@ const Dashboard = () => {
                 }
               }
             }}
-            className="shadow-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-gray-200 dark:border-gray-700"
+            className="shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl backdrop-saturate-150 border border-white/30 dark:border-gray-700/30 hover:bg-white/90 dark:hover:bg-gray-900/90 transition-all duration-300"
           >
             {isClient && (
               typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? 
@@ -266,7 +266,7 @@ const Dashboard = () => {
                     behavior: 'smooth' 
                   });
                 }}
-                className="inline-flex items-center px-8 py-3 md:px-10 md:py-4 border-2 border-input rounded-xl text-foreground hover:bg-accent transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl text-lg font-semibold backdrop-blur-sm bg-background/50"
+                className="inline-flex items-center px-8 py-3 md:px-10 md:py-4 border-2 border-white/30 dark:border-gray-700/30 rounded-xl text-foreground hover:bg-white/20 dark:hover:bg-gray-800/20 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl text-lg font-semibold backdrop-blur-xl backdrop-saturate-150 bg-white/10 dark:bg-gray-800/10"
               >
                 <span>Learn More</span>
               </button>
@@ -280,7 +280,7 @@ const Dashboard = () => {
                   <div
                     key={connection.id}
                     onClick={() => router.push(connection.href)}
-                    className="group p-3 bg-background/30 backdrop-blur-sm rounded-lg border border-border/50 hover:bg-background/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                    className="group p-3 bg-white/30 dark:bg-gray-800/30 backdrop-blur-md backdrop-saturate-150 rounded-lg border border-white/20 dark:border-gray-700/20 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg cursor-pointer"
                     style={{
                       animation: `fadeInUp 0.8s ease-out forwards`,
                       animationDelay: `${2 + index * 0.1}s`,
@@ -363,7 +363,7 @@ const Dashboard = () => {
                 return (
                   <div
                     key={index}
-                    className="bg-card/50 backdrop-blur-sm p-6 md:p-8 rounded-2xl shadow-lg border border-border/50 hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2 hover:bg-card/80"
+                    className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 p-6 md:p-8 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:bg-white/80 dark:hover:bg-gray-800/80"
                     style={{
                       animation: `fadeInUp 0.8s ease-out forwards`,
                       animationDelay: `${1.5 + index * 0.3}s`,
@@ -387,7 +387,7 @@ const Dashboard = () => {
             {/* Call to Action */}
             <div className="text-center mt-12 md:mt-16">
               <div className="inline-block p-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl">
-                <button className="px-8 md:px-12 py-3 md:py-4 bg-background rounded-lg text-foreground hover:bg-accent transition-all duration-300 transform hover:scale-105 shadow-xl text-lg font-semibold">
+                <button className="px-8 md:px-12 py-3 md:py-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl backdrop-saturate-150 rounded-lg text-foreground hover:bg-white/90 dark:hover:bg-gray-900/90 border border-white/20 dark:border-gray-700/20 transition-all duration-300 transform hover:scale-105 shadow-xl text-lg font-semibold">
                   Start Your Journey Today
                 </button>
               </div>

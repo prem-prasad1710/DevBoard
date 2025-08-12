@@ -298,7 +298,7 @@ const ProjectsPage = () => {
         {/* Create/Edit Project Modal */}
         {(isCreating || editingProject) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-card rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl backdrop-saturate-150 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/20 dark:border-gray-700/20">
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold text-card-foreground">
@@ -537,7 +537,7 @@ const ProjectsPage = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProjects.map((project) => (
-                <div key={project.id} className="bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                <div key={project.id} className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 border border-white/20 dark:border-gray-700/20 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-800/80 transform hover:-translate-y-1">
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
