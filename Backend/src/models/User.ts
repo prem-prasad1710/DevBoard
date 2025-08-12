@@ -16,6 +16,9 @@ export interface IUser extends Document {
   role: 'user' | 'admin';
   isActive: boolean;
   emailVerified: boolean;
+  tokenVersion: number;
+  passwordResetToken?: string | null;
+  passwordResetExpires?: Date | null;
   lastLoginAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -123,6 +126,18 @@ const userSchema = new Schema<IUser>(
     emailVerified: {
       type: Boolean,
       default: false,
+    },
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
     },
     lastLoginAt: {
       type: Date,

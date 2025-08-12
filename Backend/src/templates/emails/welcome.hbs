@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to DevBoard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        .title {
+            color: #1a202c;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .content {
+            color: #4a5568;
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .features {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .feature {
+            margin-bottom: 15px;
+        }
+        .feature-icon {
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        .footer {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">DevBoard</div>
+            <h1 class="title">Welcome to DevBoard! 🎉</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{username}},</p>
+            
+            <p>Welcome to DevBoard! We're thrilled to have you join our community of developers who are passionate about tracking their progress and accelerating their coding journey.</p>
+            
+            <p>DevBoard is your personal development companion that helps you:</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <span class="feature-icon">📊</span>
+                    <strong>Track Your Progress:</strong> Monitor your GitHub activity, Stack Overflow contributions, and coding milestones
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🤖</span>
+                    <strong>AI-Powered Insights:</strong> Get personalized recommendations and coding assistance
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">📝</span>
+                    <strong>Developer Journal:</strong> Document your learning journey and reflect on your growth
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🎯</span>
+                    <strong>Project Management:</strong> Organize your projects and track your goals
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">📄</span>
+                    <strong>Dynamic Resume:</strong> Generate professional resumes from your development activity
+                </div>
+            </div>
+            
+            <p>Ready to start your development journey? Click the button below to access your dashboard:</p>
+            
+            <div style="text-align: center;">
+                <a href="{{dashboardUrl}}" class="button">Open DevBoard Dashboard</a>
+            </div>
+            
+            <p>If you have any questions or need help getting started, don't hesitate to reach out to us at <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>.</p>
+            
+            <p>Happy coding!</p>
+            <p>The DevBoard Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 DevBoard. All rights reserved.</p>
+            <p>You're receiving this email because you signed up for DevBoard.</p>
+        </div>
+    </div>
+</body>
+</html>

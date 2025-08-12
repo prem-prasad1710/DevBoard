@@ -18,15 +18,63 @@ const Zap = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Zap
 const ArrowRight = dynamic(() => import('lucide-react').then(mod => ({ default: mod.ArrowRight })), { ssr: false });
 const Sun = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Sun })), { ssr: false });
 const Moon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Moon })), { ssr: false });
+const Globe = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Globe })), { ssr: false });
+const Shield = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Shield })), { ssr: false });
+const Clock = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Clock })), { ssr: false });
+const Users = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Users })), { ssr: false });
+const Rocket = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Rocket })), { ssr: false });
+const Database = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Database })), { ssr: false });
+const Activity = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Activity })), { ssr: false });
+const TrendingUp = dynamic(() => import('lucide-react').then(mod => ({ default: mod.TrendingUp })), { ssr: false });
+const Star = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Star })), { ssr: false });
+const CheckCircle = dynamic(() => import('lucide-react').then(mod => ({ default: mod.CheckCircle })), { ssr: false });
+const Lightbulb = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Lightbulb })), { ssr: false });
+const Layers = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Layers })), { ssr: false });
 
 const Dashboard = () => {
   const [isClient, setIsClient] = useState(false);
   const [activeConnection, setActiveConnection] = useState<number | null>(null);
+  const [currentStats, setCurrentStats] = useState({
+    repositories: 0,
+    commits: 0,
+    problems: 0,
+    projects: 0
+  });
   const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
+    
+    // Animate stats counter on load
+    const animateStats = () => {
+      const targets = { repositories: 45, commits: 1250, problems: 89, projects: 12 };
+      const duration = 2000;
+      const steps = 60;
+      const stepDuration = duration / steps;
+      
+      let step = 0;
+      const timer = setInterval(() => {
+        step++;
+        const progress = step / steps;
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        
+        setCurrentStats({
+          repositories: Math.floor(targets.repositories * easeOut),
+          commits: Math.floor(targets.commits * easeOut),
+          problems: Math.floor(targets.problems * easeOut),
+          projects: Math.floor(targets.projects * easeOut)
+        });
+        
+        if (step >= steps) {
+          clearInterval(timer);
+          setCurrentStats(targets);
+        }
+      }, stepDuration);
+    };
+    
+    const timer = setTimeout(animateStats, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -112,17 +160,17 @@ const Dashboard = () => {
   const getPositionClasses = (position: string) => {
     switch (position) {
       case 'top-left':
-        return 'absolute top-8 left-8 md:top-16 md:left-16';
+        return 'absolute top-6 left-6 md:top-12 md:left-12';
       case 'top-right':
-        return 'absolute top-8 right-8 md:top-16 md:right-16';
+        return 'absolute top-6 right-6 md:top-12 md:right-12';
       case 'left':
-        return 'absolute top-4/3 left-8 md:left-16 transform -translate-y-1/2'; // Moved up from top-1/2
+        return 'absolute top-1/2 left-6 md:left-12 transform -translate-y-1/2';
       case 'right':
-        return 'absolute top-4/3 right-8 md:right-16 transform -translate-y-1/2'; // Moved up from top-1/2
+        return 'absolute top-1/2 right-6 md:right-12 transform -translate-y-1/2';
       case 'bottom-left':
-        return 'absolute bottom-8 left-8 md:bottom-16 md:left-16';
+        return 'absolute bottom-6 left-6 md:bottom-12 md:left-12';
       case 'bottom-right':
-        return 'absolute bottom-8 right-8 md:bottom-16 md:right-16';
+        return 'absolute bottom-6 right-6 md:bottom-12 md:right-12';
       default:
         return '';
     }
@@ -203,93 +251,133 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        {/* Hero Section - Compact Size */}
-        <div className="relative h-[100vh] max-h-[900px] flex items-center justify-center px-7 md:px-8 pt-16 md:pt-20 lg:pt-24">
+        {/* Hero Section - Enhanced */}
+        <div className="relative h-[90vh] max-h-[800px] flex items-center justify-center px-4 md:px-8 pt-12 md:pt-16 lg:pt-20">
+
           {/* SVG for Connection Lines */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
             {connections.map((connection, index) => (
               <path
                 key={connection.id}
                 d={getConnectionPath(connection.position)}
-                stroke="rgba(0, 60, 255, 1)"
-                strokeWidth="0.2"
+                stroke="url(#gradient)"
+                strokeWidth="0.3"
                 fill="none"
                 className={`transition-all duration-1000 ${
-                  activeConnection === connection.id ? 'opacity-100 drop-shadow-lg' : 'opacity-40'
+                  activeConnection === connection.id ? 'opacity-100 drop-shadow-lg' : 'opacity-50'
                 }`}
                 style={{
-                  strokeDasharray: '2,2',
-                  animation: `dash 3s linear infinite`,
+                  strokeDasharray: '3,3',
+                  animation: `dash 4s linear infinite`,
                   animationDelay: `${connection.delay}s`,
-                  filter: activeConnection === connection.id ? 'drop-shadow(0 0 8px rgba(0, 60, 255, 1))' : 'none'
+                  filter: activeConnection === connection.id ? 'drop-shadow(0 0 12px rgba(59, 130, 246, 0.8))' : 'none'
                 }}
               />
             ))}
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#3b82f6" />
+                <stop offset="50%" stopColor="#8b5cf6" />
+                <stop offset="100%" stopColor="#06b6d4" />
+              </linearGradient>
+            </defs>
           </svg>
 
-          {/* Central DevBoard Logo */}
+          {/* Central DevBoard Logo - Enhanced */}
           <div className="relative z-10 text-center max-w-5xl mx-auto">
             <div className="mb-8 animate-float">
               <div className="relative inline-block">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl blur-xl opacity-30 animate-pulse"></div>
-                <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white px-8 md:px-12 py-6 md:py-8 rounded-2xl shadow-2xl border border-blue-500/20">
-                  <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 rounded-2xl blur-xl opacity-30 animate-pulse scale-105"></div>
+                <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white px-8 md:px-12 py-6 md:py-8 rounded-2xl shadow-2xl border border-blue-500/30 backdrop-blur-sm">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight mb-3">
                     DevBoard
                   </h1>
-                  {isClient && <Zap className="h-6 w-6 md:h-8 md:w-8 absolute -top-2 -right-2 text-yellow-400 animate-bounce" />}
+                  <div className="flex items-center justify-center space-x-2 mb-2">
+                    {isClient && <Code className="h-5 w-5 md:h-6 md:w-6 text-cyan-300 animate-pulse" />}
+                    <span className="text-base md:text-lg text-cyan-200 font-semibold">Your Development Universe</span>
+                    {isClient && <Rocket className="h-5 w-5 md:h-6 md:w-6 text-yellow-400 animate" />}
+                  </div>
+                  {isClient && <Zap className="h-6 w-6 md:h-7 md:w-7 absolute -top-2 -right-2 text-yellow-400 animate-bounce" />}
                 </div>
               </div>
             </div>
             
-            <div className="mb-10">
-              <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-6 max-w-3xl mx-auto leading-relaxed font-light">
-                Your unified development dashboard connecting all your coding platforms, 
-                projects, and productivity tools in one place
+            <div className="mb-10 max-w-3xl mx-auto">
+              <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-6 leading-relaxed font-light">
+                The <span className="font-bold text-blue-600 dark:text-blue-400">ultimate development dashboard</span> that unifies 
+                your entire coding ecosystem into one powerful, intelligent platform
               </p>
               
-              <p className="text-base md:text-lg text-muted-foreground/80 max-w-2xl mx-auto mb-8">
-                Streamline your workflow • Track your progress • Boost your productivity
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 max-w-2xl mx-auto">
+                  <div className="bg-white/5 dark:bg-gray-800/5 rounded-lg p-3 border border-white/5 dark:border-gray-700/5 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {currentStats.repositories}+
+                    </div>
+                    <div className="text-xs text-muted-foreground">Repositories</div>
+                  </div>
+                  <div className="bg-white/5 dark:bg-gray-800/5 rounded-lg p-3 border border-white/5 dark:border-gray-700/5 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-green-600 dark:text-green-400">
+                      {currentStats.commits.toLocaleString()}+
+                    </div>
+                    <div className="text-xs text-muted-foreground">Commits</div>
+                  </div>
+                  <div className="bg-white/5 dark:bg-gray-800/5 rounded-lg p-3 border border-white/5 dark:border-gray-700/5 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {currentStats.problems}+
+                    </div>
+                    <div className="text-xs text-muted-foreground">Problems Solved</div>
+                  </div>
+                  <div className="bg-white/5 dark:bg-gray-800/5 rounded-lg p-3 border border-white/5 dark:border-gray-700/5 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {currentStats.projects}+
+                    </div>
+                    <div className="text-xs text-muted-foreground">Active Projects</div>
+                  </div>
+                </div>
+
+              <p className="text-base md:text-lg text-muted-foreground/90 mb-8 max-w-xl mx-auto">
+                Track Progress • Boost Productivity • Accelerate Growth • Build Better
               </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-4 mb-10">
+            <div className="flex flex-wrap justify-center gap-4 mb-8">
               <button 
                 onClick={handleGetStarted}
-                className="group inline-flex items-center px-8 py-3 md:px-10 md:py-4 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl text-lg font-semibold"
+                className="group inline-flex items-center px-8 py-3 md:px-10 md:py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl text-base font-bold"
               >
-                <span>Get Started</span>
+                <span>Launch DevBoard</span>
                 {isClient && <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-2 transition-transform" />}
               </button>
               <button 
                 onClick={() => {
-                  document.getElementById('features-section')?.scrollIntoView({ 
+                  document.getElementById('about-section')?.scrollIntoView({ 
                     behavior: 'smooth' 
                   });
                 }}
-                className="inline-flex items-center px-8 py-3 md:px-10 md:py-4 border-2 border-white/30 dark:border-gray-700/30 rounded-xl text-foreground hover:bg-white/20 dark:hover:bg-gray-800/20 transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl text-lg font-semibold backdrop-blur-xl backdrop-saturate-150 bg-white/10 dark:bg-gray-800/10"
+                className="inline-flex items-center px-8 py-3 md:px-10 md:py-4 border-2 border-white/40 dark:border-gray-600/40 rounded-xl text-foreground hover:bg-white/30 dark:hover:bg-gray-800/30 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-base font-bold backdrop-blur-xl backdrop-saturate-150 bg-white/20 dark:bg-gray-800/20"
               >
-                <span>Learn More</span>
+                <span>Explore Features</span>
               </button>
             </div>
 
-            {/* Quick Access Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-lg mx-auto">
+            {/* Quick Access Grid - Enhanced */}
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-3 max-w-3xl mx-auto">
               {connections.slice(0, 6).map((connection, index) => {
                 const IconComponent = connection.icon;
                 return (
                   <div
                     key={connection.id}
                     onClick={() => router.push(connection.href)}
-                    className="group p-3 bg-white/30 dark:bg-gray-800/30 backdrop-blur-md backdrop-saturate-150 rounded-lg border border-white/20 dark:border-gray-700/20 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                    className="group p-3 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg backdrop-saturate-150 rounded-lg border border-white/30 dark:border-gray-700/30 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg cursor-pointer"
                     style={{
                       animation: `fadeInUp 0.8s ease-out forwards`,
-                      animationDelay: `${2 + index * 0.1}s`,
+                      animationDelay: `${2.5 + index * 0.1}s`,
                       opacity: 0
                     }}
                   >
                     <div className="text-center">
-                      {isClient && <IconComponent className="h-5 w-5 mx-auto mb-2 text-primary group-hover:scale-110 transition-transform" />}
-                      <span className="text-xs font-medium text-foreground">{connection.name}</span>
+                      {isClient && <IconComponent className="h-5 w-5 mx-auto mb-2 text-primary group-hover:scale-110 transition-transform duration-300" />}
+                      <span className="text-xs font-semibold text-foreground block">{connection.name}</span>
                     </div>
                   </div>
                 );
@@ -314,16 +402,16 @@ const Dashboard = () => {
                 onClick={() => router.push(connection.href)}
               >
                 <div className="block group">
-                  <div className={`relative p-4 md:p-6 rounded-2xl bg-gradient-to-br ${connection.color} text-white shadow-xl transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-3 border border-white/20 backdrop-blur-sm hover:border-white/40`}>
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-2xl"></div>
+                  <div className={`relative p-3 md:p-4 rounded-xl bg-gradient-to-br ${connection.color} text-white shadow-lg transform transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border border-white/20 backdrop-blur-sm hover:border-white/40`}>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl"></div>
                     <div className="relative text-center">
-                      {isClient && <IconComponent className="h-6 w-6 md:h-8 md:w-8 mx-auto mb-2 md:mb-3 group-hover:scale-125 transition-transform" />}
-                      <h3 className="text-sm md:text-base font-bold mb-1">{connection.name}</h3>
+                      {isClient && <IconComponent className="h-5 w-5 md:h-6 md:w-6 mx-auto mb-1 md:mb-2 group-hover:scale-110 transition-transform" />}
+                      <h3 className="text-xs md:text-sm font-bold mb-1">{connection.name}</h3>
                       <p className="text-xs opacity-90 hidden md:block">{connection.description}</p>
                     </div>
                     
                     {/* Pulsing ring effect */}
-                    <div className="absolute inset-0 rounded-2xl border-2 border-white/30 animate-ping opacity-75"></div>
+                    <div className="absolute inset-0 rounded-xl border border-white/20 animate-ping opacity-60"></div>
                   </div>
                 </div>
               </div>
@@ -331,99 +419,435 @@ const Dashboard = () => {
           })}
         </div>
 
-        {/* Features Section */}
-        <div id="features-section" className="relative z-10">
-          <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
+        {/* About DevBoard Section */}
+        <div id="about-section" className="relative z-10 py-16 md:py-24">
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
             <div className="text-center mb-12 md:mb-16">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 md:mb-6">Why DevBoard?</h2>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                Streamline your development workflow with integrated tools and insights
+              <div className="inline-block p-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mb-6">
+                <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-lg px-4 py-2">
+                  <span className="text-base font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    About DevBoard
+                  </span>
+                </div>
+              </div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
+                Revolutionizing
+                <br />
+                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
+                  Developer Experience
+                </span>
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                DevBoard is more than a dashboard—it's your personal development companion that transforms 
+                how you track, manage, and accelerate your coding journey.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {/* Mission & Vision */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 mb-16">
+              <div className="bg-gradient-to-br from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-white/30 dark:border-gray-700/30 shadow-xl">
+                <div className="mb-4">
+                  {isClient && <Target className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-3" />}
+                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">Our Mission</h3>
+                </div>
+                <p className="text-base text-muted-foreground leading-relaxed mb-4">
+                  To empower developers worldwide by creating the most intuitive, comprehensive, and intelligent 
+                  development tracking platform that turns data into actionable insights and scattered tools into 
+                  a unified workflow.
+                </p>
+                <div className="flex items-center text-blue-600 dark:text-blue-400 font-semibold">
+                  {isClient && <Lightbulb className="h-4 w-4 mr-2" />}
+                  Innovation-driven development
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-50/80 to-pink-50/80 dark:from-purple-900/20 dark:to-pink-900/20 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-white/30 dark:border-gray-700/30 shadow-xl">
+                <div className="mb-4">
+                  {isClient && <Rocket className="h-10 w-10 text-purple-600 dark:text-purple-400 mb-3" />}
+                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">Our Vision</h3>
+                </div>
+                <p className="text-base text-muted-foreground leading-relaxed mb-4">
+                  A world where every developer has complete visibility into their growth, where productivity 
+                  flows naturally, and where achieving coding goals becomes as simple as opening a dashboard.
+                </p>
+                <div className="flex items-center text-purple-600 dark:text-purple-400 font-semibold">
+                  {isClient && <TrendingUp className="h-4 w-4 mr-2" />}
+                  Future-focused solutions
+                </div>
+              </div>
+            </div>
+
+            {/* Key Problems We Solve */}
+            <div className="text-center mb-12">
+              <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-6">
+                Solving Real Developer Challenges
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  {
+                    icon: Activity,
+                    title: "Scattered Data",
+                    problem: "Your coding activity is spread across GitHub, Stack Overflow, multiple IDEs, and platforms",
+                    solution: "Unified view of all your development activities in one intelligent dashboard"
+                  },
+                  {
+                    icon: Clock,
+                    title: "Progress Tracking",
+                    problem: "Difficulty measuring growth, productivity, and achieving development goals",
+                    solution: "Smart analytics that track your progress and suggest areas for improvement"
+                  },
+                  {
+                    icon: Layers,
+                    title: "Tool Fragmentation",
+                    problem: "Switching between multiple tools disrupts flow and wastes valuable time",
+                    solution: "Seamless integration of all essential development tools in one place"
+                  }
+                ].map((item, index) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <div
+                      key={index}
+                      className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-xl p-6 border border-white/30 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2"
+                      style={{
+                        animation: `fadeInUp 0.8s ease-out forwards`,
+                        animationDelay: `${index * 0.2}s`,
+                        opacity: 0
+                      }}
+                    >
+                      {isClient && (
+                        <div className="mb-4 p-3 bg-red-100/80 dark:bg-red-900/30 rounded-lg inline-block">
+                          <IconComponent className="h-6 w-6 text-red-600 dark:text-red-400" />
+                        </div>
+                      )}
+                      <h4 className="text-lg font-bold text-foreground mb-3">{item.title}</h4>
+                      <p className="text-muted-foreground mb-3 text-sm leading-relaxed">
+                        <span className="text-red-600 dark:text-red-400 font-semibold">Problem:</span> {item.problem}
+                      </p>
+                      <p className="text-green-600 dark:text-green-400 text-sm leading-relaxed">
+                        <span className="font-semibold">Solution:</span> {item.solution}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Comprehensive Features Section */}
+        <div id="features-section" className="relative z-10 py-16 md:py-24 bg-gradient-to-br from-gray-50/50 to-blue-50/50 dark:from-gray-900/50 dark:to-blue-900/20">
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+                Powerful Features for
+                <br />
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Modern Developers
+                </span>
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                Everything you need to supercharge your development workflow, all in one beautiful, intelligent platform
+              </p>
+            </div>
+
+            {/* Core Features Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
               {[
                 {
+                  icon: Github,
+                  title: 'GitHub Integration',
+                  description: 'Complete repository management with real-time commit tracking, branch monitoring, and contribution analytics',
+                  features: ['Live repository sync', 'Commit statistics', 'Branch management', 'Contribution graphs']
+                },
+                {
+                  icon: MessageSquare,
+                  title: 'Stack Overflow Hub',
+                  description: 'Track your Q&A activity, reputation growth, and knowledge sharing across the developer community',
+                  features: ['Question tracking', 'Answer analytics', 'Reputation monitoring', 'Tag expertise']
+                },
+                {
+                  icon: Brain,
+                  title: 'AI-Powered Mentor',
+                  description: 'Intelligent coding assistant providing personalized guidance, code reviews, and learning recommendations',
+                  features: ['Code assistance', 'Smart suggestions', 'Learning paths', 'Skill assessment']
+                },
+                {
+                  icon: Target,
+                  title: 'Project Management',
+                  description: 'Comprehensive project tracking with milestone management, progress visualization, and team collaboration',
+                  features: ['Project templates', 'Milestone tracking', 'Progress charts', 'Team features']
+                },
+                {
+                  icon: BookOpen,
+                  title: 'Developer Journal',
+                  description: 'Document your coding journey with rich text entries, code snippets, and learning reflections',
+                  features: ['Rich text editor', 'Code highlighting', 'Tag organization', 'Search capabilities']
+                },
+                {
+                  icon: FileText,
+                  title: 'Dynamic Resume Builder',
+                  description: 'Auto-generating professional resumes from your development activity and project portfolio',
+                  features: ['Auto-generation', 'Multiple templates', 'PDF export', 'Skills highlighting']
+                },
+                {
                   icon: BarChart3,
-                  title: 'Unified Analytics',
-                  description: 'Track your progress across all platforms with comprehensive analytics and insights that help you understand your development patterns.'
+                  title: 'Advanced Analytics',
+                  description: 'Deep insights into your coding patterns, productivity trends, and skill development over time',
+                  features: ['Productivity metrics', 'Skill tracking', 'Time analysis', 'Growth trends']
                 },
                 {
                   icon: Zap,
                   title: 'Real-time Sync',
-                  description: 'Stay updated with live data synchronization from GitHub, Stack Overflow, and more. Never miss an important update or contribution.'
+                  description: 'Lightning-fast data synchronization across all platforms ensuring you always have the latest information',
+                  features: ['Instant updates', 'Live notifications', 'Offline support', 'Multi-device sync']
                 },
                 {
-                  icon: Target,
-                  title: 'Goal Tracking',
-                  description: 'Set and monitor your development goals with intelligent progress tracking that adapts to your workflow and celebrates your achievements.'
+                  icon: Shield,
+                  title: 'Privacy & Security',
+                  description: 'Enterprise-grade security with granular privacy controls and data encryption',
+                  features: ['Data encryption', 'Privacy controls', 'Secure storage', 'Access management']
                 }
               ].map((feature, index) => {
                 const IconComponent = feature.icon;
                 return (
                   <div
                     key={index}
-                    className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl backdrop-saturate-150 p-6 md:p-8 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:bg-white/80 dark:hover:bg-gray-800/80"
+                    className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/30 dark:border-gray-700/30 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:bg-white/90 dark:hover:bg-gray-800/90"
                     style={{
                       animation: `fadeInUp 0.8s ease-out forwards`,
-                      animationDelay: `${1.5 + index * 0.3}s`,
+                      animationDelay: `${index * 0.1}s`,
                       opacity: 0
                     }}
                   >
-                    <div className="text-center">
+                    <div className="mb-6">
                       {isClient && (
-                        <div className="mb-4 md:mb-6 p-3 bg-primary/10 rounded-xl inline-block">
-                          <IconComponent className="h-10 w-10 md:h-12 md:w-12 text-primary" />
+                        <div className="p-4 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50 rounded-xl inline-block group-hover:scale-110 transition-transform duration-300">
+                          <IconComponent className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                         </div>
                       )}
-                      <h3 className="text-xl md:text-2xl font-bold text-card-foreground mb-3 md:mb-4">{feature.title}</h3>
-                      <p className="text-muted-foreground leading-relaxed text-sm md:text-base">{feature.description}</p>
                     </div>
+                    <h3 className="text-xl font-bold text-foreground mb-4">{feature.title}</h3>
+                    <p className="text-muted-foreground mb-6 leading-relaxed">{feature.description}</p>
+                    <ul className="space-y-2">
+                      {feature.features.map((item, idx) => (
+                        <li key={idx} className="flex items-center text-sm text-muted-foreground">
+                          {isClient && <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />}
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 );
               })}
             </div>
 
-            {/* Call to Action */}
-            <div className="text-center mt-12 md:mt-16">
-              <div className="inline-block p-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl">
-                <button className="px-8 md:px-12 py-3 md:py-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl backdrop-saturate-150 rounded-lg text-foreground hover:bg-white/90 dark:hover:bg-gray-900/90 border border-white/20 dark:border-gray-700/20 transition-all duration-300 transform hover:scale-105 shadow-xl text-lg font-semibold">
-                  Start Your Journey Today
-                </button>
+            {/* Why Choose DevBoard */}
+            <div className="text-center mb-20">
+              <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-12">
+                Why Developers Choose DevBoard
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {[
+                  {
+                    icon: Star,
+                    title: "5-Star Experience",
+                    description: "Intuitive design that developers love"
+                  },
+                  {
+                    icon: Globe,
+                    title: "Global Community",
+                    description: "Join thousands of developers worldwide"
+                  },
+                  {
+                    icon: Database,
+                    title: "Secure & Reliable",
+                    description: "Enterprise-grade infrastructure"
+                  },
+                  {
+                    icon: Users,
+                    title: "Team Collaboration",
+                    description: "Built for individual and team success"
+                  }
+                ].map((benefit, index) => {
+                  const IconComponent = benefit.icon;
+                  return (
+                    <div
+                      key={index}
+                      className="bg-gradient-to-br from-white/90 to-blue-50/90 dark:from-gray-800/90 dark:to-blue-900/30 backdrop-blur-xl rounded-2xl p-6 border border-white/30 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      {isClient && (
+                        <div className="mb-4 p-3 bg-blue-100/80 dark:bg-blue-900/50 rounded-xl inline-block">
+                          <IconComponent className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      )}
+                      <h4 className="text-lg font-bold text-foreground mb-2">{benefit.title}</h4>
+                      <p className="text-muted-foreground text-sm">{benefit.description}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Final Call to Action */}
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 p-1 rounded-3xl inline-block mb-8">
+                <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl px-12 py-8">
+                  <h3 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                    Ready to Transform Your Development Journey?
+                  </h3>
+                  <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                    Join the revolution of data-driven development. Start tracking, growing, and achieving more than ever before.
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-6">
+                    <button 
+                      onClick={handleGetStarted}
+                      className="group inline-flex items-center px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-2xl text-lg font-bold"
+                    >
+                      <span>Start Free Today</span>
+                      {isClient && <ArrowRight className="h-6 w-6 ml-3 group-hover:translate-x-2 transition-transform" />}
+                    </button>
+                    <button className="inline-flex items-center px-10 py-4 border-2 border-gray-300 dark:border-gray-600 rounded-2xl text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300 text-lg font-semibold">
+                      Watch Demo
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Custom CSS for animations */}
+        {/* Enhanced Custom CSS for animations */}
         <style jsx>{`
           @keyframes dash {
             0% { stroke-dashoffset: 0; }
-            100% { stroke-dashoffset: 20; }
+            100% { stroke-dashoffset: 30; }
           }
           
           @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-15px) rotate(1deg); }
+            50% { transform: translateY(-25px) rotate(0deg); }
+            75% { transform: translateY(-10px) rotate(-1deg); }
           }
           
           @keyframes fadeInUp {
             from {
               opacity: 0;
-              transform: translateY(40px);
+              transform: translateY(60px) scale(0.95);
             }
             to {
               opacity: 1;
-              transform: translateY(0);
+              transform: translateY(0) scale(1);
             }
+          }
+          
+          @keyframes pulse {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+          }
+          
+          @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+            40%, 43% { transform: translate3d(0,-20px,0); }
+            70% { transform: translate3d(0,-10px,0); }
+            90% { transform: translate3d(0,-4px,0); }
+          }
+          
+          @keyframes slideInFromLeft {
+            0% { transform: translateX(-100px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+          }
+          
+          @keyframes slideInFromRight {
+            0% { transform: translateX(100px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+          }
+          
+          @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.8), 0 0 60px rgba(59, 130, 246, 0.4); }
           }
           
           .animate-float {
             animation: float 8s ease-in-out infinite;
           }
           
+          .animate-bounce-slow {
+            animation: bounce 3s infinite;
+          }
+          
+          .animate-pulse-slow {
+            animation: pulse 4s infinite;
+          }
+          
+          .animate-glow {
+            animation: glow 3s ease-in-out infinite;
+          }
+          
           .shadow-3xl {
             box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+          }
+          
+          .shadow-4xl {
+            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.25);
+          }
+          
+          .glass-effect {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+          
+          .dark .glass-effect {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+          }
+          
+          .text-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }
+          
+          .bg-mesh {
+            background-image: 
+              radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+          }
+          
+          .dark .bg-mesh {
+            background-image: 
+              radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+              radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+              radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 50%);
+          }
+          
+          /* Particle animations */
+          .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+          }
+          
+          .particle:nth-child(odd) {
+            animation: float 6s ease-in-out infinite;
+          }
+          
+          .particle:nth-child(even) {
+            animation: float 8s ease-in-out infinite reverse;
+          }
+          
+          /* Hover effects */
+          .hover-lift:hover {
+            transform: translateY(-8px) scale(1.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+          
+          .hover-glow:hover {
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
           }
         `}</style>
       </div>

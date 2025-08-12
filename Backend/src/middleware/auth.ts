@@ -1,20 +1,78 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { User } from '../models/User';
+import { User, IUser } from '../models/User';
 import { logger } from '../utils/logger';
 import { AuthenticationError, AuthorizationError } from './errorHandler';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key';
+
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: IUser;
   token?: string;
 }
 
 export interface TokenPayload {
   userId: string;
   email: string;
+  role: string;
   iat?: number;
   exp?: number;
 }
+
+export interface RefreshTokenPayload {
+  userId: string;
+  tokenVersion: number;
+  iat?: number;
+  exp?: number;
+}
+
+// Generate access token (15 minutes)
+export const generateAccessToken = (user: IUser): string => {
+  return jwt.sign(
+    {
+      userId: user._id,
+      email: user.email,
+      role: user.role,
+    },
+    JWT_SECRET,
+    { expiresIn: '15m' }
+  );
+};
+
+// Generate refresh token (7 days)
+export const generateRefreshToken = (user: IUser): string => {
+  return jwt.sign(
+    {
+      userId: user._id,
+      tokenVersion: user.tokenVersion || 0,
+    },
+    JWT_REFRESH_SECRET,
+    { expiresIn: '7d' }
+  );
+};
+
+// Verify access token
+export const verifyAccessToken = (token: string): TokenPayload | null => {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
+    return decoded;
+  } catch (error) {
+    logger.error('Access token verification failed:', error);
+    return null;
+  }
+};
+
+// Verify refresh token
+export const verifyRefreshToken = (token: string): RefreshTokenPayload | null => {
+  try {
+    const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as RefreshTokenPayload;
+    return decoded;
+  } catch (error) {
+    logger.error('Refresh token verification failed:', error);
+    return null;
+  }
+};
 
 export const authMiddleware = async (
   req: AuthRequest,
@@ -103,8 +161,6 @@ export const requireRole = (roles: string[]) => {
   };
 };
 
-export const requireAdmin = requireRole(['admin']);
-
 export const requireOwnership = (resourceUserIdField: string = 'userId') => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
@@ -123,38 +179,67 @@ export const requireOwnership = (resourceUserIdField: string = 'userId') => {
   };
 };
 
-export const rateLimitByUser = (maxRequests: number, windowMs: number) => {
-  const userRequests = new Map<string, { count: number; resetTime: number }>();
+// Middleware to require authentication
+export const requireAuth = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (!req.user) {
+    res.status(401).json({
+      success: false,
+      message: 'Authentication required',
+      code: 'UNAUTHORIZED'
+    });
+    return;
+  }
+  next();
+};
 
-  return (req: AuthRequest, res: Response, next: NextFunction): void => {
-    const userId = req.user?._id?.toString() || req.ip;
-    const now = Date.now();
-    
-    const userLimit = userRequests.get(userId);
-    
-    if (!userLimit || now > userLimit.resetTime) {
-      userRequests.set(userId, {
-        count: 1,
-        resetTime: now + windowMs,
-      });
-      next();
-      return;
-    }
+// Middleware to require admin role
+export const requireAdmin = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (!req.user || req.user.role !== 'admin') {
+    res.status(403).json({
+      success: false,
+      message: 'Admin access required',
+      code: 'FORBIDDEN'
+    });
+    return;
+  }
+  next();
+};
 
-    if (userLimit.count >= maxRequests) {
-      res.status(429).json({
-        success: false,
-        error: {
-          message: 'Rate limit exceeded',
-          code: 'RATE_LIMIT_EXCEEDED',
-        },
-        timestamp: new Date().toISOString(),
-      });
-      return;
-    }
+// Validate password strength
+export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  if (password.length < 8) {
+    errors.push('Password must be at least 8 characters long');
+  }
+  
+  if (!/(?=.*[a-z])/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter');
+  }
+  
+  if (!/(?=.*[A-Z])/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter');
+  }
+  
+  if (!/(?=.*\d)/.test(password)) {
+    errors.push('Password must contain at least one number');
+  }
+  
+  if (!/(?=.*[@$!%*?&])/.test(password)) {
+    errors.push('Password must contain at least one special character (@$!%*?&)');
+  }
 
-    userLimit.count++;
-    next();
+  return {
+    isValid: errors.length === 0,
+    errors
   };
 };
 

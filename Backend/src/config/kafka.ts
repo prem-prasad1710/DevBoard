@@ -47,30 +47,26 @@ export async function connectToKafka(): Promise<void> {
       logger.info('Kafka connections closed through app termination');
     });
 
-  } catch (error) {
-    logger.error('Failed to connect to Kafka:', error);
-    throw error;
+  } catch (error: any) {
+    logger.warn('⚠️  Kafka not available, continuing without event streaming:', error?.message || error);
+    producer = null as any;
+    consumer = null as any;
+    return;
   }
 }
 
-export function getKafkaProducer(): Producer {
-  if (!producer) {
-    throw new Error('Kafka producer not initialized. Call connectToKafka() first.');
-  }
+export function getKafkaProducer(): Producer | null {
   return producer;
 }
 
-export function getKafkaConsumer(): Consumer {
-  if (!consumer) {
-    throw new Error('Kafka consumer not initialized. Call connectToKafka() first.');
-  }
+export function getKafkaConsumer(): Consumer | null {
   return consumer;
 }
 
 // Kafka service for event streaming
 export class KafkaService {
-  private producer: Producer;
-  private consumer: Consumer;
+  private producer: Producer | null;
+  private consumer: Consumer | null;
 
   constructor() {
     this.producer = getKafkaProducer();
@@ -78,6 +74,11 @@ export class KafkaService {
   }
 
   async publishEvent(topic: string, event: any): Promise<void> {
+    if (!this.producer) {
+      logger.debug('Kafka not available, skipping event publish');
+      return;
+    }
+    
     try {
       await this.producer.send({
         topic,
@@ -100,6 +101,11 @@ export class KafkaService {
   }
 
   async subscribeToTopic(topic: string, callback: (event: any) => void): Promise<void> {
+    if (!this.consumer) {
+      logger.debug('Kafka not available, skipping topic subscription');
+      return;
+    }
+    
     try {
       await this.consumer.subscribe({ topic, fromBeginning: false });
       
@@ -156,4 +162,21 @@ export class KafkaService {
   }
 }
 
-export const kafkaService = new KafkaService();
+let kafkaServiceInstance: KafkaService | null = null;
+
+export function getKafkaService(): KafkaService {
+  if (!kafkaServiceInstance) {
+    kafkaServiceInstance = new KafkaService();
+  }
+  return kafkaServiceInstance;
+}
+
+export const kafkaService = {
+  publishEvent: (...args: Parameters<KafkaService['publishEvent']>) => getKafkaService().publishEvent(...args),
+  subscribeToTopic: (...args: Parameters<KafkaService['subscribeToTopic']>) => getKafkaService().subscribeToTopic(...args),
+  publishUserActivity: (...args: Parameters<KafkaService['publishUserActivity']>) => getKafkaService().publishUserActivity(...args),
+  publishGitHubActivity: (...args: Parameters<KafkaService['publishGitHubActivity']>) => getKafkaService().publishGitHubActivity(...args),
+  publishAIInsight: (...args: Parameters<KafkaService['publishAIInsight']>) => getKafkaService().publishAIInsight(...args),
+  publishNotification: (...args: Parameters<KafkaService['publishNotification']>) => getKafkaService().publishNotification(...args),
+  publishAchievement: (...args: Parameters<KafkaService['publishAchievement']>) => getKafkaService().publishAchievement(...args),
+};

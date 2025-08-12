@@ -76,9 +76,14 @@ export const healthCheck = async (req: Request, res: Response): Promise<void> =>
     try {
       const redisStartTime = Date.now();
       const redis = getRedisClient();
-      await redis.ping();
-      healthStatus.services.redis.status = 'connected';
-      healthStatus.services.redis.responseTime = Date.now() - redisStartTime;
+      if (redis) {
+        await redis.ping();
+        healthStatus.services.redis.status = 'connected';
+        healthStatus.services.redis.responseTime = Date.now() - redisStartTime;
+      } else {
+        healthStatus.services.redis.status = 'disconnected';
+        healthStatus.services.redis.responseTime = 0;
+      }
     } catch (error) {
       healthStatus.services.redis.status = 'error';
       healthStatus.status = 'error';

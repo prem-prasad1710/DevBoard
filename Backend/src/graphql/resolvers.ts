@@ -570,6 +570,7 @@ export const resolvers = {
         const token = generateToken({
           userId: user._id,
           email: user.email,
+          role: user.role,
         });
 
         logger.info('User registered successfully', {
@@ -625,6 +626,7 @@ export const resolvers = {
         const token = generateToken({
           userId: user._id,
           email: user.email,
+          role: user.role,
         });
 
         logger.info('User logged in successfully', {
