@@ -102,16 +102,15 @@ export default function Layout({
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile-first responsive header */}
-      {showMobileHeader && !isHomePage && (
+      {showMobileHeader && (
         <ResponsiveHeader showOnMobile={true} />
       )}
 
-      {/* Desktop sidebar - only show when not on homepage */}
-      {!isHomePage && (
-        <div className={cn(
-          "hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300",
-          navbarCollapsed ? "lg:w-16" : "lg:w-72"
-        )}>
+      {/* Desktop sidebar - always show on desktop */}
+      <div className={cn(
+        "hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300",
+        navbarCollapsed ? "lg:w-16" : "lg:w-72"
+      )}>
           <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-white/10 dark:border-gray-800/20 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl backdrop-saturate-150 px-6 pb-4 shadow-2xl shadow-black/10">
             <div className="flex h-16 shrink-0 items-center justify-between">
               <div className={cn(
@@ -179,13 +178,12 @@ export default function Layout({
             </nav>
           </div>
         </div>
-      )}
 
       {/* Main content */}
       <div className={cn(
         "flex flex-1 flex-col",
-        !isHomePage && showMobileHeader && "lg:pl-72",
-        navbarCollapsed && !isHomePage && "lg:pl-16"
+        showMobileHeader && "lg:pl-72",
+        navbarCollapsed && "lg:pl-16"
       )}>
         <main className={cn(
           "flex-1 min-h-screen",
