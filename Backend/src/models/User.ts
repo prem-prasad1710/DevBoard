@@ -24,6 +24,7 @@ export interface IUser extends Document {
   updatedAt: Date;
   settings: {
     theme: 'light' | 'dark' | 'system';
+    language: string;
     notifications: {
       email: boolean;
       push: boolean;
@@ -41,6 +42,13 @@ export interface IUser extends Document {
       stackoverflow: boolean;
       reddit: boolean;
       vscode: boolean;
+    };
+    mobile?: {
+      pushNotifications: boolean;
+      biometricAuth: boolean;
+      offlineMode: boolean;
+      dataUsage: 'low' | 'normal' | 'high';
+      autoSync: boolean;
     };
   };
   profile: {
@@ -147,6 +155,10 @@ const userSchema = new Schema<IUser>(
         type: String,
         enum: ['light', 'dark', 'system'],
         default: 'system',
+      },
+      language: {
+        type: String,
+        default: 'en',
       },
       notifications: {
         email: {

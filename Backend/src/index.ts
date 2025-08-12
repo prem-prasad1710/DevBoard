@@ -29,6 +29,7 @@ import { startCronJobs } from './services/cronJobs';
 // Import routes
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
+import mobileRoutes from './routes/mobile';
 import { healthCheck } from './routes/health';
 
 // Load environment variables
@@ -145,6 +146,7 @@ async function startServer() {
     // API Routes
     app.use('/api/auth', authRoutes);
     app.use('/api/users', userRoutes);
+    app.use('/api/mobile', mobileRoutes);
 
     // Create HTTP server
     let httpServer: http.Server | https.Server;
