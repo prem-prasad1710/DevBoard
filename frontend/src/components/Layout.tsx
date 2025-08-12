@@ -31,7 +31,6 @@ interface LayoutProps {
   children: React.ReactNode;
   showMobileHeader?: boolean;
   contentPadding?: "none" | "sm" | "md" | "lg";
-  onOpenSidebar?: () => void;
 }
 
 const navigation = [
@@ -50,8 +49,7 @@ const navigation = [
 export default function Layout({ 
   children, 
   showMobileHeader = true,
-  contentPadding = "md",
-  onOpenSidebar
+  contentPadding = "md"
 }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [navbarCollapsed, setNavbarCollapsed] = useState(false);
@@ -102,22 +100,33 @@ export default function Layout({
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile-first responsive header */}
-      {showMobileHeader && (
+      {showMobileHeader && !isHomePage && (
         <ResponsiveHeader showOnMobile={true} />
       )}
 
-      {/* Desktop sidebar - always show on desktop */}
-      <div className={cn(
-        "hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300",
-        navbarCollapsed ? "lg:w-16" : "lg:w-72"
-      )}>
+      {/* Desktop sidebar - show on non-homepage OR when homepage sidebar is open */}
+      {(!isHomePage || sidebarOpen) && (
+        <>
+          {/* Mobile backdrop for homepage */}
+          {isHomePage && sidebarOpen && (
+            <div 
+              className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+          
+          <div className={cn(
+            "fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300",
+            isHomePage ? "w-72" : navbarCollapsed ? "lg:w-16" : "lg:w-72",
+            isHomePage && sidebarOpen ? "translate-x-0" : isHomePage ? "-translate-x-full" : "hidden lg:flex"
+          )}>
           <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-white/10 dark:border-gray-800/20 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl backdrop-saturate-150 px-6 pb-4 shadow-2xl shadow-black/10">
             <div className="flex h-16 shrink-0 items-center justify-between">
               <div className={cn(
                 "flex items-center",
-                navbarCollapsed ? "justify-center" : ""
+                navbarCollapsed && !isHomePage ? "justify-center" : ""
               )}>
-                {!navbarCollapsed && (
+                {(!navbarCollapsed || isHomePage) && (
                   <>
                     <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                       DevBoard
@@ -127,7 +136,7 @@ export default function Layout({
                     </Badge>
                   </>
                 )}
-                {navbarCollapsed && (
+                {navbarCollapsed && !isHomePage && (
                   <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     D
                   </div>
@@ -136,10 +145,16 @@ export default function Layout({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setNavbarCollapsed(!navbarCollapsed)}
+                onClick={() => {
+                  if (isHomePage) {
+                    setSidebarOpen(false);
+                  } else {
+                    setNavbarCollapsed(!navbarCollapsed);
+                  }
+                }}
                 className="h-8 w-8 p-0 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300"
               >
-                <Menu className="h-4 w-4" />
+                {isHomePage ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </Button>
             </div>
             
@@ -147,7 +162,7 @@ export default function Layout({
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
                 <li>
                   <ul role="list" className="-mx-2 space-y-1">
-                    {navigation.map((item) => {
+                    {navigation.filter(item => item.name !== 'Dashboard').map((item) => {
                       const isActive = router.pathname === item.href;
                       return (
                         <li key={item.name}>
@@ -158,14 +173,15 @@ export default function Layout({
                               isActive
                                 ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-800/50 shadow-md backdrop-blur-sm'
                                 : 'text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-white/30 dark:hover:bg-gray-800/30 backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-gray-700/20 hover:shadow-sm',
-                              navbarCollapsed ? 'justify-center' : ''
+                              navbarCollapsed && !isHomePage ? 'justify-center' : ''
                             )}
+                            onClick={isHomePage ? () => setSidebarOpen(false) : undefined}
                           >
                             <item.icon className={cn(
                               "h-5 w-5 flex-shrink-0 transition-all duration-300",
                               isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300"
                             )} />
-                            {!navbarCollapsed && (
+                            {(!navbarCollapsed || isHomePage) && (
                               <span className="truncate">{item.name}</span>
                             )}
                           </Link>
@@ -178,16 +194,33 @@ export default function Layout({
             </nav>
           </div>
         </div>
+        </>
+      )}
+
+      {/* Homepage Dashboard Button - floating in top-right */}
+      {isHomePage && (
+        <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="h-10 w-10 sm:h-12 sm:w-12 p-0 rounded-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-white/20 dark:border-gray-700/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          >
+            <LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5" />
+          </Button>
+        </div>
+      )}
 
       {/* Main content */}
       <div className={cn(
-        "flex flex-1 flex-col",
-        showMobileHeader && "lg:pl-72",
-        navbarCollapsed && "lg:pl-16"
+        "flex flex-1 flex-col transition-all duration-300",
+        !isHomePage && showMobileHeader && "lg:pl-72",
+        navbarCollapsed && !isHomePage && "lg:pl-16",
+        sidebarOpen && isHomePage && "lg:pl-72"
       )}>
         <main className={cn(
           "flex-1 min-h-screen",
-          getContentPadding()
+          isHomePage ? "p-0" : getContentPadding()
         )}>
           {children}
         </main>
