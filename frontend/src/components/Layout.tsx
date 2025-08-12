@@ -31,6 +31,7 @@ interface LayoutProps {
   children: React.ReactNode;
   showMobileHeader?: boolean;
   contentPadding?: "none" | "sm" | "md" | "lg";
+  onOpenSidebar?: () => void;
 }
 
 const navigation = [
@@ -49,7 +50,8 @@ const navigation = [
 export default function Layout({ 
   children, 
   showMobileHeader = true,
-  contentPadding = "md"
+  contentPadding = "md",
+  onOpenSidebar
 }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [navbarCollapsed, setNavbarCollapsed] = useState(false);
