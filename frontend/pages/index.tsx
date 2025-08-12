@@ -116,9 +116,9 @@ const Dashboard = () => {
       case 'top-right':
         return 'absolute top-8 right-8 md:top-16 md:right-16';
       case 'left':
-        return 'absolute top-1/2 left-8 md:left-16 transform -translate-y-1/2';
+        return 'absolute top-1/3 left-8 md:left-16 transform -translate-y-1/2'; // Moved up from top-1/2
       case 'right':
-        return 'absolute top-1/2 right-8 md:right-16 transform -translate-y-1/2';
+        return 'absolute top-1/3 right-8 md:right-16 transform -translate-y-1/2'; // Moved up from top-1/2
       case 'bottom-left':
         return 'absolute bottom-8 left-8 md:bottom-16 md:left-16';
       case 'bottom-right':
@@ -138,9 +138,9 @@ const Dashboard = () => {
       case 'top-right':
         return `M85,25 Q${centerX},${centerY-15} ${centerX},${centerY}`;
       case 'left':
-        return `M15,50 Q${centerX-15},${centerY} ${centerX},${centerY}`;
+        return `M15,35 Q${centerX-15},${centerY-10} ${centerX},${centerY}`; // Adjusted for higher position
       case 'right':
-        return `M85,50 Q${centerX+15},${centerY} ${centerX},${centerY}`;
+        return `M85,35 Q${centerX+15},${centerY-10} ${centerX},${centerY}`; // Adjusted for higher position
       case 'bottom-left':
         return `M15,75 Q${centerX},${centerY+15} ${centerX},${centerY}`;
       case 'bottom-right':
@@ -277,10 +277,10 @@ const Dashboard = () => {
               {connections.slice(0, 6).map((connection, index) => {
                 const IconComponent = connection.icon;
                 return (
-                  <a
+                  <div
                     key={connection.id}
-                    href={connection.href}
-                    className="group p-3 bg-background/30 backdrop-blur-sm rounded-lg border border-border/50 hover:bg-background/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+                    onClick={() => router.push(connection.href)}
+                    className="group p-3 bg-background/30 backdrop-blur-sm rounded-lg border border-border/50 hover:bg-background/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg cursor-pointer"
                     style={{
                       animation: `fadeInUp 0.8s ease-out forwards`,
                       animationDelay: `${2 + index * 0.1}s`,
@@ -291,19 +291,19 @@ const Dashboard = () => {
                       {isClient && <IconComponent className="h-5 w-5 mx-auto mb-2 text-primary group-hover:scale-110 transition-transform" />}
                       <span className="text-xs font-medium text-foreground">{connection.name}</span>
                     </div>
-                  </a>
+                  </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Platform Connection Nodes - Smaller */}
+          {/* Platform Connection Nodes - Enhanced Clickability */}
           {connections.map((connection, index) => {
             const IconComponent = connection.icon;
             return (
               <div
                 key={connection.id}
-                className={`${getPositionClasses(connection.position)} z-20 transform transition-all duration-500 hover:scale-110`}
+                className={`${getPositionClasses(connection.position)} z-20 transform transition-all duration-500 hover:scale-110 cursor-pointer`}
                 style={{
                   animation: `fadeInUp 0.8s ease-out forwards`,
                   animationDelay: `${connection.delay}s`,
@@ -311,12 +311,10 @@ const Dashboard = () => {
                 }}
                 onMouseEnter={() => setActiveConnection(connection.id)}
                 onMouseLeave={() => setActiveConnection(null)}
+                onClick={() => router.push(connection.href)}
               >
-                <a
-                  href={connection.href}
-                  className="block group"
-                >
-                  <div className={`relative p-4 md:p-6 rounded-2xl bg-gradient-to-br ${connection.color} text-white shadow-xl transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-3 border border-white/20 backdrop-blur-sm`}>
+                <div className="block group">
+                  <div className={`relative p-4 md:p-6 rounded-2xl bg-gradient-to-br ${connection.color} text-white shadow-xl transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-3 border border-white/20 backdrop-blur-sm hover:border-white/40`}>
                     <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-2xl"></div>
                     <div className="relative text-center">
                       {isClient && <IconComponent className="h-6 w-6 md:h-8 md:w-8 mx-auto mb-2 md:mb-3 group-hover:scale-125 transition-transform" />}
@@ -327,7 +325,7 @@ const Dashboard = () => {
                     {/* Pulsing ring effect */}
                     <div className="absolute inset-0 rounded-2xl border-2 border-white/30 animate-ping opacity-75"></div>
                   </div>
-                </a>
+                </div>
               </div>
             );
           })}
