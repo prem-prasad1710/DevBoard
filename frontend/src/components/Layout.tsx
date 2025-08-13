@@ -108,14 +108,14 @@ export default function Layout({
           {/* Mobile backdrop for homepage */}
           {isHomePage && sidebarOpen && (
             <div 
-              className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
               onClick={() => setSidebarOpen(false)}
             />
           )}
           
           <div className={cn(
-            "fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-300",
-            isHomePage ? "w-72" : navbarCollapsed ? "lg:w-16" : "lg:w-72",
+            "fixed inset-y-0 left-0 flex flex-col transition-all duration-300",
+            isHomePage ? "w-72 z-50" : navbarCollapsed ? "lg:w-16 z-40" : "lg:w-72 z-40",
             isHomePage && sidebarOpen ? "translate-x-0" : isHomePage ? "-translate-x-full" : "hidden lg:flex"
           )}>
           <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-white/10 dark:border-gray-800/20 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl backdrop-saturate-150 px-6 pb-4 shadow-2xl shadow-black/10">
@@ -214,8 +214,8 @@ export default function Layout({
       <div className={cn(
         "flex flex-1 flex-col transition-all duration-300",
         !isHomePage && "lg:pl-72",
-        navbarCollapsed && !isHomePage && "lg:pl-16",
-        sidebarOpen && isHomePage && "lg:pl-72"
+        navbarCollapsed && !isHomePage && "lg:pl-16"
+        // Removed: sidebarOpen && isHomePage && "lg:pl-72" - homepage sidebar should be overlay only
       )}>
         {/* Top navigation bar with search - only show on non-homepage */}
         {!isHomePage && (
