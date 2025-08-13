@@ -57,15 +57,41 @@ const nextConfig = {
         source: '/api/backend/:path*',
         destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/:path*`,
       },
-      // PWA service worker
-      {
-        source: '/sw.js',
-        destination: '/_next/static/sw.js',
-      },
     ];
   },
   async headers() {
     return [
+      // PWA specific headers
+      {
+        source: '/manifest.json',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/manifest+json',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
+          },
+        ],
+      },
       {
         source: '/:path*',
         headers: [
