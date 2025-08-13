@@ -105,10 +105,10 @@ export default function Layout({
       {/* Desktop sidebar - show on non-homepage OR when homepage sidebar is open */}
       {(!isHomePage || sidebarOpen) && (
         <>
-          {/* Mobile backdrop for homepage */}
+          {/* Invisible backdrop for homepage - no blur or darkening */}
           {isHomePage && sidebarOpen && (
             <div 
-              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+              className="fixed inset-0 z-40"
               onClick={() => setSidebarOpen(false)}
             />
           )}
@@ -118,24 +118,25 @@ export default function Layout({
             isHomePage ? "w-72 z-50" : navbarCollapsed ? "lg:w-16 z-40" : "lg:w-72 z-40",
             isHomePage && sidebarOpen ? "translate-x-0" : isHomePage ? "-translate-x-full" : "hidden lg:flex"
           )}>
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-white/10 dark:border-gray-800/20 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl backdrop-saturate-150 px-6 pb-4 shadow-2xl shadow-black/10">
-            <div className="flex h-16 shrink-0 items-center justify-between">
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-white/20 dark:border-gray-700/30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl backdrop-saturate-200 px-6 pb-4 shadow-2xl shadow-black/20 border-l border-l-white/30 dark:border-l-gray-700/40">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/10 to-transparent dark:from-gray-800/30 dark:via-gray-800/10 dark:to-transparent pointer-events-none"></div>
+            <div className="flex h-16 shrink-0 items-center justify-between relative z-10">
               <div className={cn(
                 "flex items-center",
                 navbarCollapsed && !isHomePage ? "justify-center" : ""
               )}>
                 {(!navbarCollapsed || isHomePage) && (
                   <>
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-sm">
                       DevBoard
                     </h1>
-                    <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-800/50">
+                    <Badge variant="secondary" className="ml-2 bg-gradient-to-r from-blue-500/30 to-purple-500/30 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 backdrop-blur-sm">
                       Beta
                     </Badge>
                   </>
                 )}
                 {navbarCollapsed && !isHomePage && (
-                  <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-sm">
                     D
                   </div>
                 )}
@@ -150,7 +151,7 @@ export default function Layout({
                     setNavbarCollapsed(!navbarCollapsed);
                   }
                 }}
-                className="h-8 w-8 p-0 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300"
+                className="h-8 w-8 p-0 bg-white/40 dark:bg-gray-800/40 backdrop-blur-lg border border-white/30 dark:border-gray-700/30 rounded-lg hover:bg-white/60 dark:hover:bg-gray-800/60 transition-all duration-300 shadow-lg"
               >
                 {isHomePage ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
               </Button>
@@ -167,10 +168,10 @@ export default function Layout({
                           <Link
                             href={item.href}
                             className={cn(
-                              'group flex gap-x-3 rounded-xl p-3 text-sm leading-6 font-medium transition-all duration-300',
+                              'group flex gap-x-3 rounded-xl p-3 text-sm leading-6 font-medium transition-all duration-300 relative z-10',
                               isActive
-                                ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-800/50 shadow-md backdrop-blur-sm'
-                                : 'text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-white/30 dark:hover:bg-gray-800/30 backdrop-blur-sm border border-transparent hover:border-white/20 dark:hover:border-gray-700/20 hover:shadow-sm',
+                                ? 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 shadow-lg backdrop-blur-lg'
+                                : 'text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white hover:bg-white/40 dark:hover:bg-gray-800/40 backdrop-blur-lg border border-transparent hover:border-white/30 dark:hover:border-gray-700/30 hover:shadow-md',
                               navbarCollapsed && !isHomePage ? 'justify-center' : ''
                             )}
                             onClick={isHomePage ? () => setSidebarOpen(false) : undefined}
@@ -219,7 +220,7 @@ export default function Layout({
       )}>
         {/* Top navigation bar with search - only show on non-homepage */}
         {!isHomePage && (
-          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-white/10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl backdrop-saturate-150 px-4 shadow-lg shadow-black/5 sm:gap-x-6 sm:px-6 lg:px-8">
+          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-white/10 bg-white/100 dark:bg-gray-900/80 backdrop-blur-xl backdrop-saturate-150 px-4 shadow-lg shadow-black/5 sm:gap-x-6 sm:px-6 lg:px-8">
             <button
               type="button"
               className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 lg:hidden hover:bg-white/20 dark:hover:bg-gray-800/20 rounded-lg transition-all duration-200"
