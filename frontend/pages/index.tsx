@@ -283,21 +283,24 @@ const Dashboard = () => {
             </defs>
           </svg>
 
-          {/* Central DevBoard Logo - Enhanced */}
+          {/* Central DevBoard Logo - Enhanced with Darker Glassmorphism */}
           <div className="relative z-10 text-center max-w-5xl mx-auto">
             <div className="mb-8 animate-float">
               <div className="relative inline-block">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 rounded-2xl blur-xl opacity-30 animate-pulse scale-105"></div>
-                <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white px-8 md:px-12 py-6 md:py-8 rounded-2xl shadow-2xl border border-blue-500/30 backdrop-blur-sm">
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent leading-tight mb-3">
-                    DevBoard
-                  </h1>
-                  <div className="flex items-center justify-center space-x-2 mb-2">
-                    {isClient && <Code className="h-5 w-5 md:h-6 md:w-6 text-cyan-300 animate-pulse" />}
-                    <span className="text-base md:text-lg text-cyan-200 font-semibold">Your Development Universe</span>
-                    {isClient && <Rocket className="h-5 w-5 md:h-6 md:w-6 text-yellow-400 animate" />}
+                <div className="relative bg-black/40 dark:bg-black/60 backdrop-blur-xl backdrop-saturate-150 border border-gray-700/40 dark:border-gray-600/40 px-8 md:px-12 py-6 md:py-8 rounded-2xl shadow-2xl">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 via-purple-900/30 to-indigo-900/30 rounded-2xl"></div>
+                  <div className="relative">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent leading-tight mb-3">
+                      DevBoard
+                    </h1>
+                    <div className="flex items-center justify-center space-x-2 mb-2">
+                      {isClient && <Code className="h-5 w-5 md:h-6 md:w-6 text-cyan-400 dark:text-cyan-300 animate-pulse" />}
+                      <span className="text-base md:text-lg text-gray-200 dark:text-gray-100 font-semibold">Your Development Universe</span>
+                      {isClient && <Rocket className="h-5 w-5 md:h-6 md:w-6 text-yellow-400 dark:text-yellow-300 animate" />}
+                    </div>
+                    {isClient && <Zap className="h-6 w-6 md:h-7 md:w-7 absolute -top-2 -right-2 text-yellow-400 dark:text-yellow-300 animate-bounce" />}
                   </div>
-                  {isClient && <Zap className="h-6 w-6 md:h-7 md:w-7 absolute -top-2 -right-2 text-yellow-400 animate-bounce" />}
                 </div>
               </div>
             </div>
@@ -309,29 +312,29 @@ const Dashboard = () => {
               </p>
               
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 max-w-2xl mx-auto">
-                  <div className="bg-white/5 dark:bg-gray-800/5 rounded-lg p-3 border border-white/5 dark:border-gray-700/5 shadow-sm backdrop-blur-lg">
-                    <div className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  <div className="bg-black/20 dark:bg-black/40 rounded-lg p-3 border border-gray-600/30 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-blue-400 dark:text-blue-300">
                       {currentStats.repositories}+
                     </div>
-                    <div className="text-xs text-muted-foreground">Repositories</div>
+                    <div className="text-xs text-gray-300 dark:text-gray-200">Repositories</div>
                   </div>
-                  <div className="bg-white/5 dark:bg-gray-800/5 rounded-lg p-3 border border-white/5 dark:border-gray-700/5 shadow-sm backdrop-blur-lg">
-                    <div className="text-xl md:text-2xl font-bold text-green-600 dark:text-green-400">
+                  <div className="bg-black/20 dark:bg-black/40 rounded-lg p-3 border border-gray-600/30 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-green-400 dark:text-green-300">
                       {currentStats.commits.toLocaleString()}+
                     </div>
-                    <div className="text-xs text-muted-foreground">Commits</div>
+                    <div className="text-xs text-gray-300 dark:text-gray-200">Commits</div>
                   </div>
-                  <div className="bg-white/5 dark:bg-gray-800/5 rounded-lg p-3 border border-white/5 dark:border-gray-700/5 shadow-sm backdrop-blur-lg">
-                    <div className="text-xl md:text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  <div className="bg-black/20 dark:bg-black/40 rounded-lg p-3 border border-gray-600/30 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-orange-400 dark:text-orange-300">
                       {currentStats.problems}+
                     </div>
-                    <div className="text-xs text-muted-foreground">Problems Solved</div>
+                    <div className="text-xs text-gray-300 dark:text-gray-200">Problems Solved</div>
                   </div>
-                  <div className="bg-white/5 dark:bg-gray-800/5 rounded-lg p-3 border border-white/5 dark:border-gray-700/5 shadow-sm backdrop-blur-lg">
-                    <div className="text-xl md:text-2xl font-bold text-purple-600 dark:text-purple-400">
+                  <div className="bg-black/20 dark:bg-black/40 rounded-lg p-3 border border-gray-600/30 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-purple-400 dark:text-purple-300">
                       {currentStats.projects}+
                     </div>
-                    <div className="text-xs text-muted-foreground">Active Projects</div>
+                    <div className="text-xs text-gray-300 dark:text-gray-200">Active Projects</div>
                   </div>
                 </div>
 
@@ -368,9 +371,9 @@ const Dashboard = () => {
                   <div
                     key={connection.id}
                     onClick={() => router.push(connection.href)}
-                    className="group p-3 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg backdrop-saturate-150 rounded-lg border border-white/30 dark:border-gray-700/30 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                    className="group p-3 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg backdrop-saturate-150 rounded-lg border border-white/30 dark:border-gray-700/30 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg cursor-pointer animate-pulse"
                     style={{
-                      animation: `fadeInUp 0.8s ease-out forwards`,
+                      animation: `fadeInUp 0.8s ease-out forwards, pulse 2s infinite`,
                       animationDelay: `${2.5 + index * 0.1}s`,
                       opacity: 0
                     }}
@@ -379,6 +382,9 @@ const Dashboard = () => {
                       {isClient && <IconComponent className="h-5 w-5 mx-auto mb-2 text-primary group-hover:scale-110 transition-transform duration-300" />}
                       <span className="text-xs font-semibold text-foreground block">{connection.name}</span>
                     </div>
+                    
+                    {/* Additional pulsing ring effect */}
+                    <div className="absolute inset-0 rounded-lg border border-primary/20 animate-ping opacity-30"></div>
                   </div>
                 );
               })}
@@ -443,36 +449,42 @@ const Dashboard = () => {
               </p>
             </div>
 
-            {/* Mission & Vision */}
+            {/* Mission & Vision - Enhanced with Glassmorphism */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 mb-16">
-              <div className="bg-gradient-to-br from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-white/30 dark:border-gray-700/30 shadow-xl">
-                <div className="mb-4">
-                  {isClient && <Target className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-3" />}
-                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">Our Mission</h3>
-                </div>
-                <p className="text-base text-muted-foreground leading-relaxed mb-4">
-                  To empower developers worldwide by creating the most intuitive, comprehensive, and intelligent 
-                  development tracking platform that turns data into actionable insights and scattered tools into 
-                  a unified workflow.
-                </p>
-                <div className="flex items-center text-blue-600 dark:text-blue-400 font-semibold">
-                  {isClient && <Lightbulb className="h-4 w-4 mr-2" />}
-                  Innovation-driven development
+              <div className="bg-white/30 dark:bg-gray-900/30 backdrop-blur-xl backdrop-saturate-150 rounded-2xl p-6 md:p-8 border border-white/20 dark:border-gray-700/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:bg-white/40 dark:hover:bg-gray-900/40">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl"></div>
+                <div className="relative">
+                  <div className="mb-4">
+                    {isClient && <Target className="h-10 w-10 text-blue-600 dark:text-blue-400 mb-3" />}
+                    <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">Our Mission</h3>
+                  </div>
+                  <p className="text-base text-muted-foreground leading-relaxed mb-4">
+                    To empower developers worldwide by creating the most intuitive, comprehensive, and intelligent 
+                    development tracking platform that turns data into actionable insights and scattered tools into 
+                    a unified workflow.
+                  </p>
+                  <div className="flex items-center text-blue-600 dark:text-blue-400 font-semibold">
+                    {isClient && <Lightbulb className="h-4 w-4 mr-2" />}
+                    Innovation-driven development
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-purple-50/80 to-pink-50/80 dark:from-purple-900/20 dark:to-pink-900/20 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-white/30 dark:border-gray-700/30 shadow-xl">
-                <div className="mb-4">
-                  {isClient && <Rocket className="h-10 w-10 text-purple-600 dark:text-purple-400 mb-3" />}
-                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">Our Vision</h3>
-                </div>
-                <p className="text-base text-muted-foreground leading-relaxed mb-4">
-                  A world where every developer has complete visibility into their growth, where productivity 
-                  flows naturally, and where achieving coding goals becomes as simple as opening a dashboard.
-                </p>
-                <div className="flex items-center text-purple-600 dark:text-purple-400 font-semibold">
-                  {isClient && <TrendingUp className="h-4 w-4 mr-2" />}
-                  Future-focused solutions
+              <div className="bg-white/30 dark:bg-gray-900/30 backdrop-blur-xl backdrop-saturate-150 rounded-2xl p-6 md:p-8 border border-white/20 dark:border-gray-700/20 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:bg-white/40 dark:hover:bg-gray-900/40">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-2xl"></div>
+                <div className="relative">
+                  <div className="mb-4">
+                    {isClient && <Rocket className="h-10 w-10 text-purple-600 dark:text-purple-400 mb-3" />}
+                    <h3 className="text-xl md:text-2xl font-bold text-foreground mb-3">Our Vision</h3>
+                  </div>
+                  <p className="text-base text-muted-foreground leading-relaxed mb-4">
+                    A world where every developer has complete visibility into their growth, where productivity 
+                    flows naturally, and where achieving coding goals becomes as simple as opening a dashboard.
+                  </p>
+                  <div className="flex items-center text-purple-600 dark:text-purple-400 font-semibold">
+                    {isClient && <TrendingUp className="h-4 w-4 mr-2" />}
+                    Future-focused solutions
+                  </div>
                 </div>
               </div>
             </div>
@@ -507,25 +519,28 @@ const Dashboard = () => {
                   return (
                     <div
                       key={index}
-                      className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl rounded-xl p-6 border border-white/30 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2"
+                      className="bg-white/20 dark:bg-gray-900/20 backdrop-blur-xl backdrop-saturate-150 rounded-xl p-6 border border-white/20 dark:border-gray-700/20 shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:bg-white/30 dark:hover:bg-gray-900/30"
                       style={{
                         animation: `fadeInUp 0.8s ease-out forwards`,
                         animationDelay: `${index * 0.2}s`,
                         opacity: 0
                       }}
                     >
-                      {isClient && (
-                        <div className="mb-4 p-3 bg-red-100/80 dark:bg-red-900/30 rounded-lg inline-block">
-                          <IconComponent className="h-6 w-6 text-red-600 dark:text-red-400" />
-                        </div>
-                      )}
-                      <h4 className="text-lg font-bold text-foreground mb-3">{item.title}</h4>
-                      <p className="text-muted-foreground mb-3 text-sm leading-relaxed">
-                        <span className="text-red-600 dark:text-red-400 font-semibold">Problem:</span> {item.problem}
-                      </p>
-                      <p className="text-green-600 dark:text-green-400 text-sm leading-relaxed">
-                        <span className="font-semibold">Solution:</span> {item.solution}
-                      </p>
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-orange-500/5 rounded-xl"></div>
+                      <div className="relative">
+                        {isClient && (
+                          <div className="mb-4 p-3 bg-red-100/80 dark:bg-red-900/30 backdrop-blur-sm rounded-lg inline-block border border-red-200/30 dark:border-red-800/30">
+                            <IconComponent className="h-6 w-6 text-red-600 dark:text-red-400" />
+                          </div>
+                        )}
+                        <h4 className="text-lg font-bold text-foreground mb-3">{item.title}</h4>
+                        <p className="text-muted-foreground mb-3 text-sm leading-relaxed">
+                          <span className="text-red-600 dark:text-red-400 font-semibold">Problem:</span> {item.problem}
+                        </p>
+                        <p className="text-green-600 dark:text-green-400 text-sm leading-relaxed">
+                          <span className="font-semibold">Solution:</span> {item.solution}
+                        </p>
+                      </div>
                     </div>
                   );
                 })}
@@ -612,30 +627,33 @@ const Dashboard = () => {
                 return (
                   <div
                     key={index}
-                    className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl p-8 border border-white/30 dark:border-gray-700/30 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:bg-white/90 dark:hover:bg-gray-800/90"
+                    className="group bg-white/20 dark:bg-gray-900/20 backdrop-blur-xl backdrop-saturate-150 rounded-2xl p-8 border border-white/20 dark:border-gray-700/20 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 hover:bg-white/30 dark:hover:bg-gray-900/30"
                     style={{
                       animation: `fadeInUp 0.8s ease-out forwards`,
                       animationDelay: `${index * 0.1}s`,
                       opacity: 0
                     }}
                   >
-                    <div className="mb-6">
-                      {isClient && (
-                        <div className="p-4 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50 rounded-xl inline-block group-hover:scale-110 transition-transform duration-300">
-                          <IconComponent className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                        </div>
-                      )}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-2xl"></div>
+                    <div className="relative">
+                      <div className="mb-6">
+                        {isClient && (
+                          <div className="p-4 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-xl inline-block group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                            <IconComponent className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="text-xl font-bold text-foreground mb-4">{feature.title}</h3>
+                      <p className="text-muted-foreground mb-6 leading-relaxed">{feature.description}</p>
+                      <ul className="space-y-2">
+                        {feature.features.map((item, idx) => (
+                          <li key={idx} className="flex items-center text-sm text-muted-foreground">
+                            {isClient && <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />}
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                    <h3 className="text-xl font-bold text-foreground mb-4">{feature.title}</h3>
-                    <p className="text-muted-foreground mb-6 leading-relaxed">{feature.description}</p>
-                    <ul className="space-y-2">
-                      {feature.features.map((item, idx) => (
-                        <li key={idx} className="flex items-center text-sm text-muted-foreground">
-                          {isClient && <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />}
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                 );
               })}
@@ -673,15 +691,18 @@ const Dashboard = () => {
                   return (
                     <div
                       key={index}
-                      className="bg-gradient-to-br from-white/90 to-blue-50/90 dark:from-gray-800/90 dark:to-blue-900/30 backdrop-blur-xl rounded-2xl p-6 border border-white/30 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="bg-white/30 dark:bg-gray-900/30 backdrop-blur-xl backdrop-saturate-150 rounded-2xl p-6 border border-white/20 dark:border-gray-700/20 shadow-lg hover:shadow-2xl transition-all duration-500 hover:bg-white/40 dark:hover:bg-gray-900/40 transform hover:-translate-y-2"
                     >
-                      {isClient && (
-                        <div className="mb-4 p-3 bg-blue-100/80 dark:bg-blue-900/50 rounded-xl inline-block">
-                          <IconComponent className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                        </div>
-                      )}
-                      <h4 className="text-lg font-bold text-foreground mb-2">{benefit.title}</h4>
-                      <p className="text-muted-foreground text-sm">{benefit.description}</p>
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-2xl"></div>
+                      <div className="relative">
+                        {isClient && (
+                          <div className="mb-4 p-3 bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-xl inline-block shadow-md">
+                            <IconComponent className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                          </div>
+                        )}
+                        <h4 className="text-lg font-bold text-foreground mb-2">{benefit.title}</h4>
+                        <p className="text-muted-foreground text-sm">{benefit.description}</p>
+                      </div>
                     </div>
                   );
                 })}

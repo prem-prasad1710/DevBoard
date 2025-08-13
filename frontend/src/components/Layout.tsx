@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ResponsiveHeader } from '@/components/ui/responsive-header';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Dynamically import all icons to prevent hydration issues
@@ -23,13 +22,16 @@ const Menu = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Me
 const X = dynamic(() => import('lucide-react').then(mod => ({ default: mod.X })), { ssr: false });
 const Sun = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Sun })), { ssr: false });
 const Moon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Moon })), { ssr: false });
+// Dynamically import additional icons needed for top bar
+const Search = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Search })), { ssr: false });
+const Bell = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Bell })), { ssr: false });
+const Plus = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Plus })), { ssr: false });
 const Monitor = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Monitor })), { ssr: false });
 
 import { useTheme } from 'next-themes';
 
 interface LayoutProps {
   children: React.ReactNode;
-  showMobileHeader?: boolean;
   contentPadding?: "none" | "sm" | "md" | "lg";
   onOpenSidebar?: () => void;
 }
@@ -49,7 +51,6 @@ const navigation = [
 
 export default function Layout({ 
   children, 
-  showMobileHeader = true,
   contentPadding = "md",
   onOpenSidebar
 }: LayoutProps) {
@@ -101,11 +102,6 @@ export default function Layout({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile-first responsive header */}
-      {showMobileHeader && !isHomePage && (
-        <ResponsiveHeader showOnMobile={true} />
-      )}
-
       {/* Desktop sidebar - show on non-homepage OR when homepage sidebar is open */}
       {(!isHomePage || sidebarOpen) && (
         <>
@@ -199,16 +195,17 @@ export default function Layout({
         </>
       )}
 
-      {/* Homepage Dashboard Button - floating in top-right */}
-      {isHomePage && (
-        <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50">
+      {/* Homepage Dashboard Button - floating in top-left for all screen sizes */}
+      {isHomePage && !sidebarOpen && (
+        <div className="fixed top-4 left-4 sm:top-6 sm:left-6 lg:top-4 lg:left-4 z-50">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="h-10 w-10 sm:h-12 sm:w-12 p-0 rounded-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-white/20 dark:border-gray-700/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+        variant="default"
+        size="sm"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-lg hover:scale-105 transition-all duration-300 text-sm"
           >
-            <LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5" />
+        <LayoutDashboard className="h-4 w-4 mr-1" />
+        Dashboard
           </Button>
         </div>
       )}
@@ -216,10 +213,97 @@ export default function Layout({
       {/* Main content */}
       <div className={cn(
         "flex flex-1 flex-col transition-all duration-300",
-        !isHomePage && showMobileHeader && "lg:pl-72",
+        !isHomePage && "lg:pl-72",
         navbarCollapsed && !isHomePage && "lg:pl-16",
         sidebarOpen && isHomePage && "lg:pl-72"
       )}>
+        {/* Top navigation bar with search - only show on non-homepage */}
+        {!isHomePage && (
+          <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-white/10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl backdrop-saturate-150 px-4 shadow-lg shadow-black/5 sm:gap-x-6 sm:px-6 lg:px-8">
+            <button
+              type="button"
+              className="-m-2.5 p-2.5 text-gray-700 dark:text-gray-300 lg:hidden hover:bg-white/20 dark:hover:bg-gray-800/20 rounded-lg transition-all duration-200"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <span className="sr-only">Open sidebar</span>
+              <Menu className="h-6 w-6" aria-hidden="true" />
+            </button>
+
+            {/* Separator */}
+            <div className="h-6 w-px bg-gray-200/50 dark:bg-gray-800/50 lg:hidden" aria-hidden="true" />
+
+            <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+              <div className="relative flex flex-1 items-center">
+                <div className="relative w-full max-w-lg">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl blur-sm"></div>
+                  <div className="relative flex items-center bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-xl px-4 py-2 shadow-sm hover:bg-white/60 dark:hover:bg-gray-800/60 transition-all duration-300">
+                    <Search className="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3" />
+                    <input
+                      className="block w-full border-0 bg-transparent py-0 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-0 sm:text-sm outline-none"
+                      placeholder="Search projects, code, or anything..."
+                      type="search"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-x-2 lg:gap-x-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleTheme}
+                  className="h-9 w-9 p-0 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 shadow-sm"
+                >
+                  {getThemeIcon()}
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-9 w-9 p-0 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 shadow-sm relative"
+                >
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-900"></span>
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-9 w-9 p-0 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 shadow-sm"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+
+                {/* Separator */}
+                <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200/30 dark:lg:bg-gray-800/30" aria-hidden="true" />
+
+                {/* Profile dropdown with glassmorphism */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="flex items-center p-2 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm border border-white/20 dark:border-gray-700/20 rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 shadow-sm"
+                    id="user-menu-button"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    onClick={logout}
+                    title="Sign out"
+                  >
+                    <span className="sr-only">Open user menu</span>
+                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-sm">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="hidden lg:flex lg:items-center">
+                      <span className="ml-3 text-sm font-medium text-gray-900 dark:text-white" aria-hidden="true">
+                        {user?.name || 'Developer'}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <main className={cn(
           "flex-1 min-h-screen",
           isHomePage ? "p-0" : getContentPadding()
