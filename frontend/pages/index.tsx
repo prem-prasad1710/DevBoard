@@ -371,9 +371,9 @@ const Dashboard = () => {
                   <div
                     key={connection.id}
                     onClick={() => router.push(connection.href)}
-                    className="group p-3 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg backdrop-saturate-150 rounded-lg border border-white/30 dark:border-gray-700/30 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg cursor-pointer animate-pulse"
+                    className="group p-3 bg-white/30 dark:bg-gray-800/30 backdrop-blur-lg backdrop-saturate-150 rounded-lg border border-white/30 dark:border-gray-700/30 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg cursor-pointer"
                     style={{
-                      animation: `fadeInUp 0.8s ease-out forwards, pulse 2s infinite`,
+                      animation: `fadeInUp 0.8s ease-out forwards`,
                       animationDelay: `${2.5 + index * 0.1}s`,
                       opacity: 0
                     }}
@@ -382,16 +382,13 @@ const Dashboard = () => {
                       {isClient && <IconComponent className="h-5 w-5 mx-auto mb-2 text-primary group-hover:scale-110 transition-transform duration-300" />}
                       <span className="text-xs font-semibold text-foreground block">{connection.name}</span>
                     </div>
-                    
-                    {/* Additional pulsing ring effect */}
-                    <div className="absolute inset-0 rounded-lg border border-primary/20 animate-ping opacity-30"></div>
                   </div>
-                );
+                );  
               })}
             </div>
           </div>
 
-          {/* Platform Connection Nodes - Enhanced Clickability */}
+          {/* Platform Connection Nodes - Enhanced Clickability with Pulse Animation */}
           {connections.map((connection, index) => {
             const IconComponent = connection.icon;
             return (
@@ -399,7 +396,7 @@ const Dashboard = () => {
                 key={connection.id}
                 className={`${getPositionClasses(connection.position)} z-20 transform transition-all duration-500 hover:scale-110 cursor-pointer`}
                 style={{
-                  animation: `fadeInUp 0.8s ease-out forwards`,
+                  animation: `fadeInUp 0.8s ease-out forwards, pulse 3s infinite`,
                   animationDelay: `${connection.delay}s`,
                   opacity: 0
                 }}
@@ -411,13 +408,14 @@ const Dashboard = () => {
                   <div className={`relative p-3 md:p-4 rounded-xl bg-gradient-to-br ${connection.color} text-white shadow-lg transform transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border border-white/20 backdrop-blur-sm hover:border-white/40`}>
                     <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl"></div>
                     <div className="relative text-center">
-                      {isClient && <IconComponent className="h-5 w-5 md:h-6 md:w-6 mx-auto mb-1 md:mb-2 group-hover:scale-110 transition-transform" />}
+                      {isClient && <IconComponent className="h-5 w-5 md:h-6 md:w-6 mx-auto mb-1 md:mb-2 group-hover:scale-110 transition-transform " />}
                       <h3 className="text-xs md:text-sm font-bold mb-1">{connection.name}</h3>
                       <p className="text-xs opacity-90 hidden md:block">{connection.description}</p>
                     </div>
                     
-                    {/* Pulsing ring effect */}
-                    <div className="absolute inset-0 rounded-xl border border-white/20 animate-ping opacity-60"></div>
+                    {/* Enhanced pulsing ring effects */}
+                    <div className="absolute inset-0 rounded-xl border border-white/20 opacity-60"></div>
+                    <div className="absolute inset-0 rounded-xl border-2 border-white/10 opacity-40" style={{ animationDuration: '2s' }}></div>
                   </div>
                 </div>
               </div>
