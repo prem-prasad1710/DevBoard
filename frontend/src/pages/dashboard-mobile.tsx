@@ -71,7 +71,7 @@ export default function MobileDashboard() {
 
   if (!isClient) {
     return (
-      <Layout showMobileHeader={true} contentPadding="md">
+      <Layout contentPadding="md">
         <div className="flex items-center justify-center min-h-screen">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
@@ -135,7 +135,7 @@ export default function MobileDashboard() {
   ];
 
   return (
-    <Layout showMobileHeader={true} contentPadding="sm">
+    <Layout contentPadding="sm">
       {/* Welcome Header */}
       <div className="mb-6">
         <div className="text-center sm:text-left">
