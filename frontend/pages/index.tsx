@@ -40,6 +40,7 @@ const Dashboard = () => {
     problems: 0,
     projects: 0
   });
+  const [openSidebarFn, setOpenSidebarFn] = useState<((open: boolean) => void) | null>(null);
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -87,10 +88,14 @@ const Dashboard = () => {
   }, [session, status, router]);
 
   const handleGetStarted = () => {
-    // Open sidebar if available
-    if (typeof window !== 'undefined' && (window as any).openSidebar) {
-      (window as any).openSidebar();
+    // Open sidebar using the function provided by Layout
+    if (openSidebarFn) {
+      openSidebarFn(true);
     }
+  };
+
+  const handleSidebarRef = (setSidebarOpen: (open: boolean) => void) => {
+    setOpenSidebarFn(() => setSidebarOpen);
   };
 
   // Array of platforms/features that connect to DevBoard
@@ -164,9 +169,9 @@ const Dashboard = () => {
       case 'top-right':
         return 'absolute top-6 right-6 md:top-12 md:right-12';
       case 'left':
-        return 'absolute top-1/2 left-6 md:left-12 transform -translate-y-1/2';
+        return 'absolute top-4/2 left-6 md:left-12 transform -translate-y-1/2';
       case 'right':
-        return 'absolute top-1/2 right-6 md:right-12 transform -translate-y-1/2';
+        return 'absolute top-4/2 right-6 md:right-12 transform -translate-y-1/2';
       case 'bottom-left':
         return 'absolute bottom-6 left-6 md:bottom-12 md:left-12';
       case 'bottom-right':
@@ -215,7 +220,7 @@ const Dashboard = () => {
   }
 
   return (
-    <Layout onOpenSidebar={handleGetStarted}>
+    <Layout onOpenSidebar={handleSidebarRef}>
       <div className="bg-gradient-to-br from-background via-background to-accent/20 relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -312,29 +317,29 @@ const Dashboard = () => {
               </p>
               
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 max-w-2xl mx-auto">
-                  <div className="bg-black/20 dark:bg-black/40 rounded-lg p-3 border border-gray-600/30 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
-                    <div className="text-xl md:text-2xl font-bold text-blue-400 dark:text-blue-300">
+                  <div className="bg-white/30 dark:bg-black/40 rounded-lg p-3 border border-gray-300/40 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-blue-600 dark:text-blue-300">
                       {currentStats.repositories}+
                     </div>
-                    <div className="text-xs text-gray-300 dark:text-gray-200">Repositories</div>
+                    <div className="text-xs text-gray-700 dark:text-gray-200">Repositories</div>
                   </div>
-                  <div className="bg-black/20 dark:bg-black/40 rounded-lg p-3 border border-gray-600/30 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
-                    <div className="text-xl md:text-2xl font-bold text-green-400 dark:text-green-300">
+                  <div className="bg-white/30 dark:bg-black/40 rounded-lg p-3 border border-gray-300/40 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-green-600 dark:text-green-300">
                       {currentStats.commits.toLocaleString()}+
                     </div>
-                    <div className="text-xs text-gray-300 dark:text-gray-200">Commits</div>
+                    <div className="text-xs text-gray-700 dark:text-gray-200">Commits</div>
                   </div>
-                  <div className="bg-black/20 dark:bg-black/40 rounded-lg p-3 border border-gray-600/30 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
-                    <div className="text-xl md:text-2xl font-bold text-orange-400 dark:text-orange-300">
+                  <div className="bg-white/30 dark:bg-black/40 rounded-lg p-3 border border-gray-300/40 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-orange-600 dark:text-orange-300">
                       {currentStats.problems}+
                     </div>
-                    <div className="text-xs text-gray-300 dark:text-gray-200">Problems Solved</div>
+                    <div className="text-xs text-gray-700 dark:text-gray-200">Problems Solved</div>
                   </div>
-                  <div className="bg-black/20 dark:bg-black/40 rounded-lg p-3 border border-gray-600/30 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
-                    <div className="text-xl md:text-2xl font-bold text-purple-400 dark:text-purple-300">
+                  <div className="bg-white/30 dark:bg-black/40 rounded-lg p-3 border border-gray-300/40 dark:border-gray-500/30 shadow-sm backdrop-blur-lg">
+                    <div className="text-xl md:text-2xl font-bold text-purple-600 dark:text-purple-300">
                       {currentStats.projects}+
                     </div>
-                    <div className="text-xs text-gray-300 dark:text-gray-200">Active Projects</div>
+                    <div className="text-xs text-gray-700 dark:text-gray-200">Active Projects</div>
                   </div>
                 </div>
 

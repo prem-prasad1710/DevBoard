@@ -34,6 +34,9 @@ const Share = dynamic(() => import('lucide-react').then(mod => ({ default: mod.S
 const ChevronDown = dynamic(() => import('lucide-react').then(mod => ({ default: mod.ChevronDown })), { ssr: false });
 const ChevronUp = dynamic(() => import('lucide-react').then(mod => ({ default: mod.ChevronUp })), { ssr: false });
 const Building = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Building })), { ssr: false });
+const Upload = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Upload })), { ssr: false });
+const FileCheck = dynamic(() => import('lucide-react').then(mod => ({ default: mod.FileCheck })), { ssr: false });
+const AlertCircle = dynamic(() => import('lucide-react').then(mod => ({ default: mod.AlertCircle })), { ssr: false });
 const X = dynamic(() => import('lucide-react').then(mod => ({ default: mod.X })), { ssr: false });
 
 const ResumePage = () => {
@@ -44,13 +47,41 @@ const ResumePage = () => {
   const [isClient, setIsClient] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['overview', 'experience', 'skills']));
   const [isExporting, setIsExporting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [editingPersonalInfo, setEditingPersonalInfo] = useState(false);
+  const [personalInfo, setPersonalInfo] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    location: '',
+    website: '',
+    linkedin: '',
+    github: '',
+    summary: ''
+  });
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeRef = useRef<HTMLDivElement>(null);
 
-  const { resume, loading, error, refetch, updateResume } = useResume();
+  const { resume, loading, error, refetch, updateResume, uploadResumeFile } = useResume();
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    // Initialize personal info when resume loads
+    if (resume?.personalInfo) {
+      setPersonalInfo({
+        fullName: resume.personalInfo.fullName || '',
+        email: resume.personalInfo.email || '',
+        phone: resume.personalInfo.phone || '',
+        location: resume.personalInfo.location || '',
+        website: resume.personalInfo.website || '',
+        linkedin: resume.personalInfo.linkedin || '',
+        github: resume.personalInfo.github || '',
+        summary: resume.personalInfo.summary || ''
+      });
+    }
+  }, [resume]);
 
   // Add intersection observer to update active section on scroll
   useEffect(() => {
@@ -94,6 +125,80 @@ const ResumePage = () => {
     } catch (error) {
       console.error('Error saving resume:', error);
     }
+  };
+
+  const handleSavePersonalInfo = async () => {
+    try {
+      await updateResume({ personalInfo: personalInfo });
+      setEditingPersonalInfo(false);
+      console.log('Personal info saved successfully');
+    } catch (error) {
+      console.error('Error saving personal info:', error);
+      alert('Failed to save personal information. Please try again.');
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      setIsUploading(true);
+      await uploadResumeFile(file);
+      setUploadedFile(file);
+      console.log('Resume file uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload resume. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (validateFile(file)) {
+        handleFileUpload(file);
+      }
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (validateFile(file)) {
+        handleFileUpload(file);
+      }
+    }
+  };
+
+  const validateFile = (file: File) => {
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please upload only PDF or Word documents');
+      return false;
+    }
+
+    if (file.size > maxSize) {
+      alert('File size must be less than 10MB');
+      return false;
+    }
+
+    return true;
   };
 
   const handleExport = async (format: 'pdf' | 'json') => {
@@ -370,6 +475,119 @@ const ResumePage = () => {
           </div>
         </div>
 
+        {/* Resume Upload Section */}
+        <div className="mb-6">
+          <div className="bg-card rounded-lg shadow-sm border p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-card-foreground">Resume Upload</h2>
+                <p className="text-sm text-muted-foreground">Upload your existing resume or build one from scratch</p>
+              </div>
+              {resume?.uploadedResume && (
+                <div className="flex items-center text-sm text-green-600 dark:text-green-400">
+                  {isClient && <FileCheck className="h-4 w-4 mr-2" />}
+                  Resume uploaded
+                </div>
+              )}
+            </div>
+
+            {!resume?.uploadedResume ? (
+              <div
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                  dragActive 
+                    ? 'border-primary bg-primary/5' 
+                    : 'border-border hover:border-primary/50'
+                }`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                
+                <div className="flex flex-col items-center">
+                  {isClient && (
+                    isUploading ? (
+                      <RefreshCw className="h-12 w-12 text-muted-foreground animate-spin mb-4" />
+                    ) : (
+                      <Upload className="h-12 w-12 text-muted-foreground mb-4" />
+                    )
+                  )}
+                  
+                  <h3 className="text-lg font-medium text-foreground mb-2">
+                    {isUploading ? 'Uploading...' : 'Upload Your Resume'}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Drag and drop your resume here, or click to browse
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Supports PDF and Word documents (max 10MB)
+                  </p>
+                  
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isClient && <Upload className="h-4 w-4 mr-2" />}
+                    Choose File
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-accent/20 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    {isClient && <FileCheck className="h-5 w-5 text-green-600 dark:text-green-400 mr-3" />}
+                    <div>
+                      <p className="font-medium text-foreground">
+                        {resume.uploadedResume.originalName}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Uploaded on {new Date(resume.uploadedResume.uploadedAt).toLocaleDateString()}
+                        {' • '}
+                        {(resume.uploadedResume.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <a
+                      href={`http://localhost:4000/${resume.uploadedResume.path}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-3 py-1 text-sm bg-secondary text-secondary-foreground rounded hover:bg-secondary/80"
+                    >
+                      {isClient && <Eye className="h-4 w-4 mr-1" />}
+                      View
+                    </a>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90"
+                    >
+                      {isClient && <Upload className="h-4 w-4 mr-1" />}
+                      Replace
+                    </button>
+                  </div>
+                </div>
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
@@ -444,66 +662,190 @@ const ResumePage = () => {
               <div id="section-overview" className="p-8 border-b border-border scroll-mt-6">
                 <div className="text-center mb-8">
                   <div className="mb-6">
-                    <h1 className="text-4xl font-bold text-foreground mb-2">
-                      {resume?.personalInfo?.fullName || 'Your Name'}
-                    </h1>
-                    <p className="text-xl text-muted-foreground mb-4">
-                      Full Stack Developer
-                    </p>
+                    {editingPersonalInfo ? (
+                      <div className="space-y-4">
+                        <input
+                          type="text"
+                          value={personalInfo.fullName}
+                          onChange={(e) => setPersonalInfo({...personalInfo, fullName: e.target.value})}
+                          className="text-4xl font-bold text-foreground text-center w-full bg-transparent border-b border-border focus:border-primary outline-none"
+                          placeholder="Your Full Name"
+                        />
+                        <input
+                          type="text"
+                          value="Full Stack Developer"
+                          className="text-xl text-muted-foreground text-center w-full bg-transparent border-b border-border focus:border-primary outline-none"
+                          placeholder="Your Job Title"
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <h1 className="text-4xl font-bold text-foreground mb-2">
+                          {resume?.personalInfo?.fullName || 'Your Name'}
+                        </h1>
+                        <p className="text-xl text-muted-foreground mb-4">
+                          Full Stack Developer
+                        </p>
+                      </>
+                    )}
                   </div>
 
                   {/* Contact Information */}
-                  <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground mb-6">
-                    <div className="flex items-center">
-                      {isClient && <Mail className="h-4 w-4 mr-2" />}
-                      <span>{resume?.personalInfo?.email || 'email@example.com'}</span>
+                  {editingPersonalInfo ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="flex items-center">
+                        {isClient && <Mail className="h-4 w-4 mr-2" />}
+                        <input
+                          type="email"
+                          value={personalInfo.email}
+                          onChange={(e) => setPersonalInfo({...personalInfo, email: e.target.value})}
+                          className="flex-1 bg-transparent border-b border-border focus:border-primary outline-none text-sm"
+                          placeholder="email@example.com"
+                        />
+                      </div>
+                      <div className="flex items-center">
+                        {isClient && <Phone className="h-4 w-4 mr-2" />}
+                        <input
+                          type="tel"
+                          value={personalInfo.phone}
+                          onChange={(e) => setPersonalInfo({...personalInfo, phone: e.target.value})}
+                          className="flex-1 bg-transparent border-b border-border focus:border-primary outline-none text-sm"
+                          placeholder="+1 (555) 123-4567"
+                        />
+                      </div>
+                      <div className="flex items-center">
+                        {isClient && <MapPin className="h-4 w-4 mr-2" />}
+                        <input
+                          type="text"
+                          value={personalInfo.location}
+                          onChange={(e) => setPersonalInfo({...personalInfo, location: e.target.value})}
+                          className="flex-1 bg-transparent border-b border-border focus:border-primary outline-none text-sm"
+                          placeholder="City, State"
+                        />
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      {isClient && <Phone className="h-4 w-4 mr-2" />}
-                      <span>{resume?.personalInfo?.phone || '+1 (555) 123-4567'}</span>
+                  ) : (
+                    <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground mb-6">
+                      <div className="flex items-center">
+                        {isClient && <Mail className="h-4 w-4 mr-2" />}
+                        <span>{resume?.personalInfo?.email || 'email@example.com'}</span>
+                      </div>
+                      <div className="flex items-center">
+                        {isClient && <Phone className="h-4 w-4 mr-2" />}
+                        <span>{resume?.personalInfo?.phone || '+1 (555) 123-4567'}</span>
+                      </div>
+                      <div className="flex items-center">
+                        {isClient && <MapPin className="h-4 w-4 mr-2" />}
+                        <span>{resume?.personalInfo?.location || 'City, State'}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      {isClient && <MapPin className="h-4 w-4 mr-2" />}
-                      <span>{resume?.personalInfo?.location || 'City, State'}</span>
-                    </div>
-                  </div>
+                  )}
 
                   {/* Social Links */}
-                  <div className="flex justify-center gap-4">
-                    {resume?.personalInfo?.website && (
-                      <a
-                        href={resume.personalInfo.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 border border-primary/20 rounded-lg hover:bg-primary/5"
-                      >
+                  {editingPersonalInfo ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <div className="flex items-center">
                         {isClient && <Globe className="h-4 w-4 mr-2" />}
-                        Website
-                      </a>
-                    )}
-                    {resume?.personalInfo?.github && (
-                      <a
-                        href={resume.personalInfo.github}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 border border-primary/20 rounded-lg hover:bg-primary/5"
-                      >
+                        <input
+                          type="url"
+                          value={personalInfo.website}
+                          onChange={(e) => setPersonalInfo({...personalInfo, website: e.target.value})}
+                          className="flex-1 bg-transparent border-b border-border focus:border-primary outline-none text-sm"
+                          placeholder="https://yourwebsite.com"
+                        />
+                      </div>
+                      <div className="flex items-center">
                         {isClient && <Github className="h-4 w-4 mr-2" />}
-                        GitHub
-                      </a>
-                    )}
-                    {resume?.personalInfo?.linkedin && (
-                      <a
-                        href={resume.personalInfo.linkedin}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 border border-primary/20 rounded-lg hover:bg-primary/5"
-                      >
+                        <input
+                          type="url"
+                          value={personalInfo.github}
+                          onChange={(e) => setPersonalInfo({...personalInfo, github: e.target.value})}
+                          className="flex-1 bg-transparent border-b border-border focus:border-primary outline-none text-sm"
+                          placeholder="https://github.com/username"
+                        />
+                      </div>
+                      <div className="flex items-center">
                         {isClient && <Linkedin className="h-4 w-4 mr-2" />}
-                        LinkedIn
-                      </a>
-                    )}
-                  </div>
+                        <input
+                          type="url"
+                          value={personalInfo.linkedin}
+                          onChange={(e) => setPersonalInfo({...personalInfo, linkedin: e.target.value})}
+                          className="flex-1 bg-transparent border-b border-border focus:border-primary outline-none text-sm"
+                          placeholder="https://linkedin.com/in/username"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-center gap-4">
+                      {resume?.personalInfo?.website && (
+                        <a
+                          href={resume.personalInfo.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 border border-primary/20 rounded-lg hover:bg-primary/5"
+                        >
+                          {isClient && <Globe className="h-4 w-4 mr-2" />}
+                          Website
+                        </a>
+                      )}
+                      {resume?.personalInfo?.github && (
+                        <a
+                          href={resume.personalInfo.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 border border-primary/20 rounded-lg hover:bg-primary/5"
+                        >
+                          {isClient && <Github className="h-4 w-4 mr-2" />}
+                          GitHub
+                        </a>
+                      )}
+                      {resume?.personalInfo?.linkedin && (
+                        <a
+                          href={resume.personalInfo.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-2 text-sm font-medium text-primary hover:text-primary/80 border border-primary/20 rounded-lg hover:bg-primary/5"
+                        >
+                          {isClient && <Linkedin className="h-4 w-4 mr-2" />}
+                          LinkedIn
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  {editingPersonalInfo && (
+                    <div className="flex justify-center gap-2 mt-4">
+                      <button
+                        onClick={handleSavePersonalInfo}
+                        className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm"
+                      >
+                        {isClient && <Save className="h-4 w-4 mr-2" />}
+                        Save
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingPersonalInfo(false);
+                          // Reset to original values
+                          if (resume?.personalInfo) {
+                            setPersonalInfo({
+                              fullName: resume.personalInfo.fullName || '',
+                              email: resume.personalInfo.email || '',
+                              phone: resume.personalInfo.phone || '',
+                              location: resume.personalInfo.location || '',
+                              website: resume.personalInfo.website || '',
+                              linkedin: resume.personalInfo.linkedin || '',
+                              github: resume.personalInfo.github || '',
+                              summary: resume.personalInfo.summary || ''
+                            });
+                          }
+                        }}
+                        className="inline-flex items-center px-4 py-2 border border-input rounded-lg text-foreground hover:bg-accent text-sm"
+                      >
+                        {isClient && <X className="h-4 w-4 mr-2" />}
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Professional Summary */}
@@ -512,14 +854,26 @@ const ResumePage = () => {
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-xl font-semibold text-foreground">Professional Summary</h2>
                       {isEditing && isClient && (
-                        <button className="text-muted-foreground hover:text-foreground">
+                        <button 
+                          onClick={() => setEditingPersonalInfo(!editingPersonalInfo)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
                           <Edit3 className="h-4 w-4" />
                         </button>
                       )}
                     </div>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {resume?.personalInfo?.summary || 'Passionate software developer with experience in modern web technologies and a strong commitment to writing clean, efficient code. Skilled in full-stack development with expertise in React, Node.js, and cloud technologies.'}
-                    </p>
+                    {editingPersonalInfo ? (
+                      <textarea
+                        value={personalInfo.summary}
+                        onChange={(e) => setPersonalInfo({...personalInfo, summary: e.target.value})}
+                        className="w-full h-32 p-3 bg-transparent border border-border rounded-lg focus:border-primary outline-none text-muted-foreground leading-relaxed resize-none"
+                        placeholder="Write a compelling professional summary that highlights your experience, skills, and career goals..."
+                      />
+                    ) : (
+                      <p className="text-muted-foreground leading-relaxed">
+                        {resume?.personalInfo?.summary || 'Passionate software developer with experience in modern web technologies and a strong commitment to writing clean, efficient code. Skilled in full-stack development with expertise in React, Node.js, and cloud technologies.'}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

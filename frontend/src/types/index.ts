@@ -249,6 +249,16 @@ export interface Resume {
   languages: Language[];
   createdAt: Date;
   updatedAt: Date;
+  uploadedResume?: UploadedFile;
+}
+
+export interface UploadedFile {
+  filename: string;
+  originalName: string;
+  mimetype: string;
+  size: number;
+  path: string;
+  uploadedAt: string;
 }
 
 export interface PersonalInfo {

@@ -6,6 +6,8 @@ import Layout from '@/components/Layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserProfile } from '@/hooks';
+import { toast } from 'react-hot-toast';
 
 // Dynamically import icons to prevent hydration issues
 const User = dynamic(() => import('lucide-react').then(mod => ({ default: mod.User })), { ssr: false });
@@ -40,6 +42,7 @@ interface ProfileData {
   phone: string;
   website: string;
   avatar: string;
+  profileImage?: string; // Add profile image field
   github: string;
   linkedin: string;
   twitter: string;
@@ -88,19 +91,34 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [isPrivateMode, setIsPrivateMode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { user, updateUser } = useAuth();
+  const { user: profileUser, loading: profileLoading, updateUserProfile } = useUserProfile();
 
-  // Sample profile data - in real app this would come from API/database
+  // Form state for editing
+  const [editForm, setEditForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    bio: '',
+    personalWebsite: '',
+    githubUsername: '',
+    linkedinUrl: '',
+    twitterUrl: '',
+    profileImage: '',
+  });
+
+  // Sample profile data - enhanced with real user data from backend
   const [profileData, setProfileData] = useState<ProfileData>({
-    name: user?.name || "Developer",
+    name: "Developer",
     title: "Full Stack Developer & AI Enthusiast",
     bio: "Passionate full-stack developer with expertise in modern web technologies. I love building scalable applications and exploring the intersection of AI and web development. Always eager to learn new technologies and solve complex problems.",
-    location: user?.location || "San Francisco, CA",
-    email: user?.email || "developer@example.com",
+    location: "San Francisco, CA",
+    email: "developer@example.com",
     phone: "+1 (555) 123-4567",
-    website: user?.website || "https://developer.dev",
-    avatar: user?.avatar || "/api/placeholder/150/150",
-    github: user?.provider === 'github' ? `https://github.com/${user.githubUsername || user.email.split('@')[0]}` : "https://github.com/developer",
+    website: "https://developer.dev",
+    avatar: "/api/placeholder/150/150",
+    github: "https://github.com/developer",
     linkedin: "https://linkedin.com/in/developer",
     twitter: "https://twitter.com/developer",
     skills: [
@@ -206,6 +224,36 @@ const ProfilePage = () => {
     setIsClient(true);
   }, []);
 
+  // Update profile data when backend user data changes
+  useEffect(() => {
+    if (profileUser) {
+      setProfileData(prevData => ({
+        ...prevData,
+        name: `${profileUser.firstName || ''} ${profileUser.lastName || ''}`.trim() || prevData.name,
+        email: profileUser.email || prevData.email,
+        bio: profileUser.bio || prevData.bio,
+        website: profileUser.personalWebsite || prevData.website,
+        github: profileUser.githubUsername ? `https://github.com/${profileUser.githubUsername}` : prevData.github,
+        linkedin: profileUser.linkedinUrl || prevData.linkedin,
+        twitter: profileUser.twitterUrl || prevData.twitter,
+        profileImage: (profileUser as any).profileImage || prevData.profileImage,
+      }));
+
+      // Update edit form with backend data
+      setEditForm({
+        firstName: profileUser.firstName || '',
+        lastName: profileUser.lastName || '',
+        email: profileUser.email || '',
+        bio: profileUser.bio || '',
+        personalWebsite: profileUser.personalWebsite || '',
+        githubUsername: profileUser.githubUsername || '',
+        linkedinUrl: profileUser.linkedinUrl || '',
+        twitterUrl: profileUser.twitterUrl || '',
+        profileImage: (profileUser as any).profileImage || '',
+      });
+    }
+  }, [profileUser]);
+
   const skillCategories = Array.from(new Set(profileData.skills.map(skill => skill.category)));
 
   const getSkillColor = (category: string) => {
@@ -229,8 +277,74 @@ const ProfilePage = () => {
     { id: 'achievements', label: 'Achievements', icon: Award }
   ];
 
+  // Handle form input changes
+  const handleInputChange = (field: string, value: string) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Handle profile image upload
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setEditForm(prev => ({
+          ...prev,
+          profileImage: result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Save profile changes
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      await updateUserProfile(editForm);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    // Reset form to current profile data
+    if (profileUser) {
+      setEditForm({
+        firstName: profileUser.firstName || '',
+        lastName: profileUser.lastName || '',
+        email: profileUser.email || '',
+        bio: profileUser.bio || '',
+        personalWebsite: profileUser.personalWebsite || '',
+        githubUsername: profileUser.githubUsername || '',
+        linkedinUrl: profileUser.linkedinUrl || '',
+        twitterUrl: profileUser.twitterUrl || '',
+        profileImage: (profileUser as any).profileImage || '',
+      });
+    }
+  };
+
   if (!isClient) {
     return <Layout><div className="flex justify-center items-center h-64">Loading...</div></Layout>;
+  }
+
+  if (profileLoading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
   }
 
   return (
@@ -251,14 +365,25 @@ const ProfilePage = () => {
                 {isPrivateMode ? 'Private' : 'Public'}
               </Button>
               <Button
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={() => isEditing ? handleCancelEdit() : setIsEditing(true)}
                 variant="outline"
                 size="sm"
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                disabled={isSaving}
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Edit
+                {isEditing ? 'Cancel' : 'Edit'}
               </Button>
+              {isEditing && (
+                <Button
+                  onClick={handleSaveProfile}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Saving...' : 'Save'}
+                </Button>
+              )}
             </div>
           </div>
           
@@ -267,8 +392,29 @@ const ProfilePage = () => {
             <div className="flex flex-col md:flex-row items-start md:items-end space-y-4 md:space-y-0 md:space-x-6">
               <div className="relative">
                 <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 p-1">
-                  <div className="w-full h-full rounded-xl bg-white flex items-center justify-center">
-                    <User className="h-16 w-16 text-gray-400" />
+                  <div className="w-full h-full rounded-xl bg-white flex items-center justify-center overflow-hidden relative group">
+                    {(isEditing ? editForm.profileImage : profileData.profileImage) ? (
+                      <img 
+                        src={isEditing ? editForm.profileImage : profileData.profileImage} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                    ) : (
+                      <User className="h-16 w-16 text-gray-400" />
+                    )}
+                    {isEditing && (
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
+                        <label className="cursor-pointer text-white text-sm font-medium">
+                          Upload Photo
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-green-500 w-8 h-8 rounded-full border-4 border-white flex items-center justify-center">
@@ -278,7 +424,26 @@ const ProfilePage = () => {
               
               <div className="flex-1 space-y-2">
                 <div className="flex items-center space-x-3">
-                  <h1 className="text-3xl font-bold text-foreground">{profileData.name}</h1>
+                  {isEditing ? (
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={editForm.firstName}
+                        onChange={(e) => handleInputChange('firstName', e.target.value)}
+                        placeholder="First Name"
+                        className="text-2xl font-bold bg-white/20 dark:bg-gray-800/20 backdrop-blur-lg border border-white/30 dark:border-gray-600/30 rounded-lg px-3 py-2 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <input
+                        type="text"
+                        value={editForm.lastName}
+                        onChange={(e) => handleInputChange('lastName', e.target.value)}
+                        placeholder="Last Name"
+                        className="text-2xl font-bold bg-white/20 dark:bg-gray-800/20 backdrop-blur-lg border border-white/30 dark:border-gray-600/30 rounded-lg px-3 py-2 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  ) : (
+                    <h1 className="text-3xl font-bold text-foreground">{profileData.name}</h1>
+                  )}
                   <div className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                     <Sparkles className="h-3 w-3 inline mr-1" />
                     Pro
@@ -292,11 +457,31 @@ const ProfilePage = () => {
                   </div>
                   <div className="flex items-center space-x-1">
                     <Mail className="h-4 w-4" />
-                    <span>{profileData.email}</span>
+                    {isEditing ? (
+                      <input
+                        type="email"
+                        value={editForm.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        placeholder="Email"
+                        className="bg-white/20 dark:bg-gray-800/20 backdrop-blur-lg border border-white/30 dark:border-gray-600/30 rounded px-2 py-1 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <span>{profileData.email}</span>
+                    )}
                   </div>
                   <div className="flex items-center space-x-1">
                     <Globe className="h-4 w-4" />
-                    <span>{profileData.website}</span>
+                    {isEditing ? (
+                      <input
+                        type="url"
+                        value={editForm.personalWebsite}
+                        onChange={(e) => handleInputChange('personalWebsite', e.target.value)}
+                        placeholder="Website URL"
+                        className="bg-white/20 dark:bg-gray-800/20 backdrop-blur-lg border border-white/30 dark:border-gray-600/30 rounded px-2 py-1 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <span>{profileData.website}</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -371,7 +556,17 @@ const ProfilePage = () => {
                     <User className="h-5 w-5 mr-2" />
                     About Me
                   </h3>
-                  <p className="text-muted-foreground leading-relaxed">{profileData.bio}</p>
+                  {isEditing ? (
+                    <textarea
+                      value={editForm.bio}
+                      onChange={(e) => handleInputChange('bio', e.target.value)}
+                      placeholder="Tell us about yourself..."
+                      rows={4}
+                      className="w-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-gray-300/40 dark:border-gray-600/40 rounded-lg px-4 py-3 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 leading-relaxed resize-none"
+                    />
+                  ) : (
+                    <p className="text-muted-foreground leading-relaxed">{profileData.bio}</p>
+                  )}
                 </Card>
 
                 <Card className="p-6">
@@ -430,18 +625,67 @@ const ProfilePage = () => {
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold mb-4">Social Links</h3>
                   <div className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start">
-                      <Github className="h-4 w-4 mr-3" />
-                      GitHub
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Linkedin className="h-4 w-4 mr-3" />
-                      LinkedIn
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start">
-                      <Twitter className="h-4 w-4 mr-3" />
-                      Twitter
-                    </Button>
+                    {isEditing ? (
+                      <>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">GitHub Username</label>
+                          <input
+                            type="text"
+                            value={editForm.githubUsername}
+                            onChange={(e) => handleInputChange('githubUsername', e.target.value)}
+                            placeholder="Your GitHub username"
+                            className="w-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-gray-300/40 dark:border-gray-600/40 rounded-lg px-3 py-2 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">LinkedIn URL</label>
+                          <input
+                            type="url"
+                            value={editForm.linkedinUrl}
+                            onChange={(e) => handleInputChange('linkedinUrl', e.target.value)}
+                            placeholder="https://linkedin.com/in/yourusername"
+                            className="w-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-gray-300/40 dark:border-gray-600/40 rounded-lg px-3 py-2 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-foreground">Twitter URL</label>
+                          <input
+                            type="url"
+                            value={editForm.twitterUrl}
+                            onChange={(e) => handleInputChange('twitterUrl', e.target.value)}
+                            placeholder="https://twitter.com/yourusername"
+                            className="w-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-lg border border-gray-300/40 dark:border-gray-600/40 rounded-lg px-3 py-2 text-foreground placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          className="w-full justify-start"
+                          onClick={() => window.open(profileData.github, '_blank')}
+                        >
+                          <Github className="h-4 w-4 mr-3" />
+                          GitHub
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full justify-start"
+                          onClick={() => window.open(profileData.linkedin, '_blank')}
+                        >
+                          <Linkedin className="h-4 w-4 mr-3" />
+                          LinkedIn
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          className="w-full justify-start"
+                          onClick={() => window.open(profileData.twitter, '_blank')}
+                        >
+                          <Twitter className="h-4 w-4 mr-3" />
+                          Twitter
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </Card>
 

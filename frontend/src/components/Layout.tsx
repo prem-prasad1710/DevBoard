@@ -33,7 +33,7 @@ import { useTheme } from 'next-themes';
 interface LayoutProps {
   children: React.ReactNode;
   contentPadding?: "none" | "sm" | "md" | "lg";
-  onOpenSidebar?: () => void;
+  onOpenSidebar?: (setSidebarOpen: (open: boolean) => void) => void;
 }
 
 const navigation = [
@@ -59,6 +59,14 @@ export default function Layout({
   const { theme, setTheme } = useTheme();
   const { user, logout } = useAuth();
   const router = useRouter();
+
+  // Handle external sidebar open requests
+  useEffect(() => {
+    if (onOpenSidebar) {
+      // Call the onOpenSidebar function and pass the setSidebarOpen function
+      onOpenSidebar(setSidebarOpen);
+    }
+  }, [onOpenSidebar]);
 
   const toggleTheme = () => {
     if (theme === 'light') {

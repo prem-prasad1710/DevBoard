@@ -65,27 +65,61 @@ export const useDashboard = () => {
 
 // User Profile Hook
 export const useUserProfile = () => {
-  const { data, loading, error, refetch } = useQuery(GET_USER_PROFILE);
-  const [updateProfile] = useMutation(UPDATE_USER_PROFILE, {
-    onCompleted: () => {
-      toast.success('Profile updated successfully');
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(`Error updating profile: ${error.message}`);
-    }
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<any>(null);
 
-  const updateUserProfile = useCallback((input: any) => {
-    updateProfile({ variables: { input } });
-  }, [updateProfile]);
+  const fetchUser = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:4000/api/user');
+      if (!response.ok) {
+        throw new Error('Failed to fetch user');
+      }
+      const userData = await response.json();
+      setUser(userData);
+      setError(null);
+    } catch (err) {
+      setError(err);
+      console.error('Error fetching user:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateUserProfile = useCallback(async (input: any) => {
+    try {
+      const response = await fetch('http://localhost:4000/api/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(input),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+      
+      const updatedUser = await response.json();
+      setUser(updatedUser);
+      toast.success('Profile updated successfully');
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      toast.error('Error updating profile');
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   return {
-    user: data?.user as User,
+    user,
     loading,
     error,
     updateUserProfile,
-    refetch
+    refetch: fetchUser
   };
 };
 
@@ -924,200 +958,128 @@ export const useResume = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Simulate API call
-    const loadResume = async () => {
-      try {
-        setLoading(true);
-        // Simulate delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const mockResume: Resume = {
-          id: '1',
-          personalInfo: {
-            fullName: 'John Doe',
-            email: 'john.doe@example.com',
-            phone: '+1 (555) 123-4567',
-            location: 'San Francisco, CA',
-            website: 'https://johndoe.dev',
-            linkedin: 'https://linkedin.com/in/johndoe',
-            github: 'https://github.com/johndoe',
-            summary: 'Passionate Full Stack Developer with 5+ years of experience building scalable web applications using modern technologies. Expertise in React, Node.js, TypeScript, and cloud platforms. Strong advocate for clean code, test-driven development, and agile methodologies.'
-          },
-          experience: [
-            {
-              id: '1',
-              company: 'TechCorp Inc.',
-              position: 'Senior Software Engineer',
-              startDate: new Date('2022-01-01'),
-              endDate: undefined,
-              current: true,
-              description: 'Lead development of customer-facing web applications serving 100K+ users. Architected microservices infrastructure and implemented CI/CD pipelines.',
-              achievements: [
-                'Improved application performance by 40% through code optimization',
-                'Led a team of 4 developers in agile environment',
-                'Implemented automated testing reducing bugs by 60%'
-              ],
-              technologies: ['React', 'TypeScript', 'Node.js', 'AWS', 'Docker', 'PostgreSQL']
-            },
-            {
-              id: '2',
-              company: 'StartupXYZ',
-              position: 'Full Stack Developer',
-              startDate: new Date('2020-03-01'),
-              endDate: new Date('2021-12-31'),
-              current: false,
-              description: 'Developed and maintained e-commerce platform from concept to production. Collaborated with design and product teams to deliver user-centric solutions.',
-              achievements: [
-                'Built responsive e-commerce platform handling 10K+ transactions',
-                'Integrated payment systems and third-party APIs',
-                'Mentored junior developers and conducted code reviews'
-              ],
-              technologies: ['React', 'Node.js', 'MongoDB', 'Express', 'Stripe API', 'Jest']
-            },
-            {
-              id: '3',
-              company: 'WebDev Agency',
-              position: 'Frontend Developer',
-              startDate: new Date('2019-06-01'),
-              endDate: new Date('2020-02-28'),
-              current: false,
-              description: 'Created responsive websites and web applications for various clients. Focused on performance optimization and cross-browser compatibility.',
-              achievements: [
-                'Delivered 15+ client projects on time and within budget',
-                'Improved website loading speeds by average of 50%',
-                'Implemented modern JavaScript frameworks and build tools'
-              ],
-              technologies: ['JavaScript', 'React', 'Vue.js', 'Sass', 'Webpack', 'Git']
-            }
-          ],
-          education: [
-            {
-              id: '1',
-              institution: 'University of California, Berkeley',
-              degree: 'Bachelor of Science',
-              field: 'Computer Science',
-              startDate: new Date('2015-09-01'),
-              endDate: new Date('2019-05-15'),
-              gpa: 3.8,
-              achievements: [
-                'Magna Cum Laude',
-                'Dean\'s List (6 semesters)',
-                'Computer Science Student of the Year 2019'
-              ]
-            }
-          ],
-          skills: [
-            {
-              category: 'Frontend Development',
-              items: ['React', 'TypeScript', 'Next.js', 'Vue.js', 'HTML5', 'CSS3', 'Tailwind CSS'],
-              proficiencyLevel: 'expert'
-            },
-            {
-              category: 'Backend Development',
-              items: ['Node.js', 'Express', 'Python', 'Django', 'PostgreSQL', 'MongoDB'],
-              proficiencyLevel: 'advanced'
-            },
-            {
-              category: 'DevOps & Cloud',
-              items: ['AWS', 'Docker', 'Kubernetes', 'CI/CD', 'GitHub Actions'],
-              proficiencyLevel: 'intermediate'
-            },
-            {
-              category: 'Tools & Others',
-              items: ['Git', 'Jest', 'Cypress', 'Figma', 'Jira', 'Agile/Scrum'],
-              proficiencyLevel: 'advanced'
-            }
-          ],
-          projects: [
-            {
-              id: '1',
-              name: 'E-Commerce Platform',
-              description: 'Full-stack e-commerce solution with payment processing, inventory management, and admin dashboard.',
-              technologies: ['React', 'Node.js', 'PostgreSQL', 'Stripe'],
-              url: 'https://demo-ecommerce.com',
-              githubUrl: 'https://github.com/johndoe/ecommerce-platform',
-              highlights: [
-                'Built from scratch with modern tech stack',
-                'Handles 10K+ products and user accounts',
-                'Integrated payment gateway and shipping APIs'
-              ]
-            },
-            {
-              id: '2',
-              name: 'Task Management App',
-              description: 'Collaborative project management tool with real-time updates, file sharing, and team communication.',
-              technologies: ['React', 'Socket.io', 'Express', 'MongoDB'],
-              url: 'https://taskflow-app.com',
-              githubUrl: 'https://github.com/johndoe/taskflow',
-              highlights: [
-                'Real-time collaboration features',
-                'Drag-and-drop interface',
-                'File upload and sharing system'
-              ]
-            }
-          ],
-          certifications: [
-            {
-              id: '1',
-              name: 'AWS Certified Solutions Architect',
-              issuer: 'Amazon Web Services',
-              date: new Date('2023-03-15'),
-              expiryDate: new Date('2026-03-15'),
-              url: 'https://aws.amazon.com/certification/'
-            },
-            {
-              id: '2',
-              name: 'React Developer Certification',
-              issuer: 'Meta',
-              date: new Date('2022-08-20'),
-              expiryDate: undefined,
-              url: 'https://developers.facebook.com/docs/react/'
-            }
-          ],
-          languages: [
-            {
-              language: 'English',
-              proficiency: 'native'
-            },
-            {
-              language: 'Spanish',
-              proficiency: 'conversational'
-            },
-            {
-              language: 'French',
-              proficiency: 'basic'
-            }
-          ],
-          createdAt: new Date('2023-01-01'),
-          updatedAt: new Date()
-        };
-
-        setResume(mockResume);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load resume');
-      } finally {
-        setLoading(false);
+  const fetchResume = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('http://localhost:4000/api/resume');
+      if (!response.ok) {
+        throw new Error('Failed to fetch resume');
       }
-    };
-
-    loadResume();
+      const resumeData = await response.json();
+      
+      // Convert date strings back to Date objects
+      const processedResume = {
+        ...resumeData,
+        createdAt: new Date(resumeData.createdAt),
+        updatedAt: new Date(resumeData.updatedAt),
+        experience: resumeData.experience?.map((exp: any) => ({
+          ...exp,
+          startDate: new Date(exp.startDate),
+          endDate: exp.endDate ? new Date(exp.endDate) : undefined
+        })) || [],
+        education: resumeData.education?.map((edu: any) => ({
+          ...edu,
+          startDate: new Date(edu.startDate),
+          endDate: edu.endDate ? new Date(edu.endDate) : undefined
+        })) || [],
+        certifications: resumeData.certifications?.map((cert: any) => ({
+          ...cert,
+          date: new Date(cert.date),
+          expiryDate: cert.expiryDate ? new Date(cert.expiryDate) : undefined
+        })) || []
+      };
+      
+      setResume(processedResume);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch resume');
+      console.error('Error fetching resume:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const refetch = () => {
-    setLoading(true);
-    setError(null);
-    // Simulate refetch
-    setTimeout(() => {
-      setLoading(false);
-    }, 500);
-  };
-
-  const updateResume = (updatedResume: Partial<Resume>) => {
-    if (resume) {
-      setResume({ ...resume, ...updatedResume });
+  const updateResume = useCallback(async (input: any) => {
+    try {
+      const response = await fetch('http://localhost:4000/api/resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(input),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update resume');
+      }
+      
+      const updatedResume = await response.json();
+      setResume(updatedResume);
+      return updatedResume;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update resume');
+      throw err;
     }
+  }, []);
+
+  const uploadResumeFile = useCallback(async (file: File) => {
+    try {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('resumeFile', file);
+
+      const response = await fetch('http://localhost:4000/api/resume/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload resume');
+      }
+
+      const result = await response.json();
+      
+      // Update the resume state with the new file info
+      if (result.resume) {
+        const processedResume = {
+          ...result.resume,
+          createdAt: new Date(result.resume.createdAt),
+          updatedAt: new Date(result.resume.updatedAt),
+          experience: result.resume.experience?.map((exp: any) => ({
+            ...exp,
+            startDate: new Date(exp.startDate),
+            endDate: exp.endDate ? new Date(exp.endDate) : undefined
+          })) || [],
+          education: result.resume.education?.map((edu: any) => ({
+            ...edu,
+            startDate: new Date(edu.startDate),
+            endDate: edu.endDate ? new Date(edu.endDate) : undefined
+          })) || [],
+          certifications: result.resume.certifications?.map((cert: any) => ({
+            ...cert,
+            date: new Date(cert.date),
+            expiryDate: cert.expiryDate ? new Date(cert.expiryDate) : undefined
+          })) || []
+        };
+        setResume(processedResume);
+      }
+
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload resume');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchResume();
+  }, [fetchResume]);
+
+  const refetch = () => {
+    fetchResume();
   };
 
   return {
@@ -1125,7 +1087,8 @@ export const useResume = () => {
     loading,
     error,
     refetch,
-    updateResume
+    updateResume,
+    uploadResumeFile
   };
 };
 

@@ -14,20 +14,76 @@ dotenv.config();
 
 const PORT = process.env.PORT || 4000;
 
-// Simple schema for testing
+// Mock user data storage
+let mockUser = {
+  id: '1',
+  firstName: 'John',
+  lastName: 'Doe',
+  email: 'john.doe@example.com',
+  username: 'johndoe',
+  bio: 'Full-stack developer passionate about building amazing applications.',
+  githubUsername: 'johndoe',
+  stackOverflowUsername: 'johndoe',
+  linkedinUrl: 'https://linkedin.com/in/johndoe',
+  twitterUrl: 'https://twitter.com/johndoe',
+  personalWebsite: 'https://johndoe.dev'
+};
+
+// Schema with user profile support
 const typeDefs = `
+  type User {
+    id: ID!
+    firstName: String
+    lastName: String
+    email: String
+    username: String
+    bio: String
+    githubUsername: String
+    stackOverflowUsername: String
+    linkedinUrl: String
+    twitterUrl: String
+    personalWebsite: String
+  }
+
   type Query {
     hello: String
     health: String
+    user: User
+  }
+
+  type Mutation {
+    updateUserProfile(input: UserInput!): User
+  }
+
+  input UserInput {
+    firstName: String
+    lastName: String
+    email: String
+    username: String
+    bio: String
+    githubUsername: String
+    stackOverflowUsername: String
+    linkedinUrl: String
+    twitterUrl: String
+    personalWebsite: String
   }
 `;
 
-// Simple resolvers for testing
+// Resolvers with user profile support
 const resolvers = {
   Query: {
     hello: () => 'Hello from DevBoard GraphQL Server!',
-    health: () => 'Server is running successfully!'
-  }
+    health: () => 'Server is running successfully!',
+    user: () => mockUser,
+  },
+  Mutation: {
+    updateUserProfile: (_: any, { input }: { input: any }) => {
+      console.log('Updating user profile with:', input);
+      // Update mock user with new data
+      mockUser = { ...mockUser, ...input };
+      return mockUser;
+    },
+  },
 };
 
 async function startServer() {
@@ -72,7 +128,7 @@ async function startServer() {
     app.use(
       '/graphql',
       cors({
-        origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+        origin: ['http://localhost:3000', 'http://localhost:3001'],
         credentials: true,
       }),
       json(),
