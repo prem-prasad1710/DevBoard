@@ -1,4 +1,4 @@
-# DevBoard - Personal Developer Dashboard
+<h1 align = "center"> DevBoard - Personal Developer Dashboard</h1>
 
 🚀 **Personal Dev Dashboard for GitHub + StackOverflow + Blogs + Logs**
 
