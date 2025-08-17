@@ -1,6 +1,6 @@
 <h1 align = "center"> DevBoard - Personal Developer Dashboard</h1>
 
-🚀 **Personal Dev Dashboard for GitHub + StackOverflow + Blogs + Logs**
+<h3 align = "center">🚀 Personal Dev Dashboard for GitHub + StackOverflow + Blogs + Logs </h3>
 
 A comprehensive, modern developer dashboard for tracking your coding journey, managing projects, and accelerating your growth. Built with React.js, Next.js, Node.js, GraphQL, and MongoDB.
 
