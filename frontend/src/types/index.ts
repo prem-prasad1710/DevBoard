@@ -214,12 +214,53 @@ export interface CodeChallenge {
   completed: boolean;
   completedAt?: Date;
   createdAt: Date;
+  status: 'solved' | 'attempted' | 'todo';
+  acceptanceRate: number;
+  tags?: string[];
+  leetcodeUrl: string;
+  solutionUrl?: string;
 }
 
 export interface TestCase {
+  id: string;
   input: string;
   expectedOutput: string;
   description?: string;
+}
+
+export interface UserStats {
+  totalSolved: number;
+  easySolved: number;
+  mediumSolved: number;
+  hardSolved: number;
+  totalSubmissions: number;
+  acceptanceRate: number;
+  currentStreak: number;
+  maxStreak: number;
+  ranking: number;
+  contestsParticipated: number;
+}
+
+export interface RecentSubmission {
+  id: string;
+  title: string;
+  status: 'accepted' | 'wrong-answer' | 'time-limit-exceeded' | 'memory-limit-exceeded' | 'runtime-error';
+  language: string;
+  runtime: string;
+  memory: string;
+  timestamp: Date;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
+export interface UseCodeChallengesReturn {
+  challenges: CodeChallenge[];
+  userStats: UserStats;
+  recentSubmissions: RecentSubmission[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+  syncLeetCode: () => Promise<void>;
+  connectLeetCode: () => Promise<void>;
 }
 
 export interface CodeChallengeResult {

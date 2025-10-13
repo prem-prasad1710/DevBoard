@@ -563,6 +563,111 @@ export const typeDefs = gql`
     activities: Int!
   }
 
+  # LeetCode Types
+  type LeetCodeProfile {
+    username: String!
+    avatar: String
+    realName: String
+    location: String
+    website: String
+    github: String
+    linkedin: String
+    ranking: Int!
+    reputation: Int!
+    school: String
+    skillTags: [String!]!
+    aboutMe: String
+  }
+
+  type LeetCodeStats {
+    totalSolved: Int!
+    totalQuestions: Int!
+    easySolved: Int!
+    totalEasy: Int!
+    mediumSolved: Int!
+    totalMedium: Int!
+    hardSolved: Int!
+    totalHard: Int!
+    acceptanceRate: Float!
+    ranking: Int!
+    contributionPoints: Int!
+    reputation: Int!
+  }
+
+  type LeetCodeSubmission {
+    id: ID!
+    title: String!
+    titleSlug: String!
+    timestamp: String!
+    statusDisplay: String!
+    lang: String!
+    runtime: String
+    memory: String
+    code: String
+    question: LeetCodeQuestion!
+  }
+
+  type LeetCodeQuestion {
+    questionId: String!
+    title: String!
+    difficulty: String!
+    categoryTitle: String!
+    topicTags: [LeetCodeTag!]!
+  }
+
+  type LeetCodeTag {
+    name: String!
+    slug: String!
+  }
+
+  type LeetCodeProblem {
+    questionId: String!
+    title: String!
+    titleSlug: String!
+    difficulty: String!
+    categoryTitle: String!
+    likes: Int!
+    dislikes: Int!
+    acRate: Float!
+    isPaidOnly: Boolean!
+    topicTags: [LeetCodeTag!]!
+    content: String!
+    codeSnippets: [CodeSnippet!]!
+    sampleTestCase: String!
+    metaData: String!
+  }
+
+  type CodeSnippet {
+    lang: String!
+    langSlug: String!
+    code: String!
+  }
+
+  type LeetCodeProblemsResult {
+    problems: [LeetCodeProblem!]!
+    total: Int!
+    hasMore: Boolean!
+  }
+
+  type LeetCodeDailyChallenge {
+    date: String!
+    userStatus: String
+    link: String!
+    question: LeetCodeProblem!
+  }
+
+  type LeetCodeConnectionResult {
+    success: Boolean!
+    message: String!
+    username: String
+  }
+
+  type LeetCodeSyncResult {
+    success: Boolean!
+    message: String!
+    data: JSON
+  }
+
   type Query {
     # User queries
     me: User
@@ -603,6 +708,15 @@ export const typeDefs = gql`
     productivityMetrics(userId: ID!): ProductivityMetrics!
     weeklyReport(userId: ID!): WeeklyReport!
     leaderboard(period: String): [LeaderboardEntry!]!
+
+    # LeetCode queries
+    leetcodeProfile(username: String!): LeetCodeProfile
+    leetcodeStats(username: String!): LeetCodeStats
+    leetcodeSubmissions(username: String!, limit: Int): [LeetCodeSubmission!]!
+    leetcodeProblem(titleSlug: String!): LeetCodeProblem
+    leetcodeProblems(skip: Int, limit: Int, filters: JSON): LeetCodeProblemsResult!
+    leetcodeDailyChallenge: LeetCodeDailyChallenge
+    searchLeetcodeProblems(keyword: String!, limit: Int): [LeetCodeProblem!]!
   }
 
   type Mutation {
@@ -643,6 +757,11 @@ export const typeDefs = gql`
     sendAIMessage(chatId: ID!, message: String!): String!
     generateBlogPost(topic: String!, style: String): String!
     generateTweet(topic: String!, style: String): String!
+
+    # LeetCode mutations
+    connectLeetCode(username: String!): LeetCodeConnectionResult!
+    syncLeetCodeData(username: String!): LeetCodeSyncResult!
+    disconnectLeetCode: LeetCodeConnectionResult!
   }
 
   # Input types

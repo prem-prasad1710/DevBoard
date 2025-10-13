@@ -82,6 +82,14 @@ export interface IResume extends Document {
     content: string;
     order: number;
   }[];
+  uploadedResume?: {
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    path: string;
+    uploadedAt: Date;
+  };
   aiGenerated: boolean;
   lastExported?: Date;
   exportCount: number;
@@ -200,6 +208,14 @@ const ResumeSchema = new Schema<IResume>(
       content: { type: String, required: true },
       order: { type: Number, required: true },
     }],
+    uploadedResume: {
+      filename: { type: String },
+      originalName: { type: String },
+      mimetype: { type: String },
+      size: { type: Number },
+      path: { type: String },
+      uploadedAt: { type: Date },
+    },
     aiGenerated: {
       type: Boolean,
       default: false,

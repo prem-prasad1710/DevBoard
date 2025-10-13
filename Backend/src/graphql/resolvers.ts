@@ -17,7 +17,8 @@ import {
   GitHubService, 
   StackOverflowService, 
   OpenAIService, 
-  DataAnalyticsService 
+  DataAnalyticsService,
+  LeetCodeService 
 } from '../services';
 import { GraphQLScalarType, Kind } from 'graphql';
 
@@ -523,6 +524,139 @@ export const resolvers = {
         }));
       } catch (error) {
         logger.error('Failed to fetch leaderboard:', error);
+        throw error;
+      }
+    },
+
+    // LeetCode queries
+    leetcodeProfile: async (
+      _: any,
+      { username }: { username: string },
+      context: GraphQLContext
+    ) => {
+      try {
+        const leetcodeService = new LeetCodeService();
+        const profile = await leetcodeService.getUserProfile(username);
+        
+        if (!profile) {
+          throw new Error('LeetCode profile not found');
+        }
+        
+        return profile;
+      } catch (error) {
+        logger.error('Failed to fetch LeetCode profile:', error);
+        throw error;
+      }
+    },
+
+    leetcodeStats: async (
+      _: any,
+      { username }: { username: string },
+      context: GraphQLContext
+    ) => {
+      try {
+        const leetcodeService = new LeetCodeService();
+        const stats = await leetcodeService.getUserStats(username);
+        
+        if (!stats) {
+          throw new Error('LeetCode stats not found');
+        }
+        
+        return stats;
+      } catch (error) {
+        logger.error('Failed to fetch LeetCode stats:', error);
+        throw error;
+      }
+    },
+
+    leetcodeSubmissions: async (
+      _: any,
+      { username, limit = 20 }: { username: string; limit?: number },
+      context: GraphQLContext
+    ) => {
+      try {
+        const leetcodeService = new LeetCodeService();
+        const submissions = await leetcodeService.getRecentSubmissions(username, limit);
+        
+        return submissions;
+      } catch (error) {
+        logger.error('Failed to fetch LeetCode submissions:', error);
+        throw error;
+      }
+    },
+
+    leetcodeProblem: async (
+      _: any,
+      { titleSlug }: { titleSlug: string },
+      context: GraphQLContext
+    ) => {
+      try {
+        const leetcodeService = new LeetCodeService();
+        const problem = await leetcodeService.getProblemDetails(titleSlug);
+        
+        if (!problem) {
+          throw new Error('LeetCode problem not found');
+        }
+        
+        return problem;
+      } catch (error) {
+        logger.error('Failed to fetch LeetCode problem:', error);
+        throw error;
+      }
+    },
+
+    leetcodeProblems: async (
+      _: any,
+      { skip = 0, limit = 50, filters }: { skip?: number; limit?: number; filters?: any },
+      context: GraphQLContext
+    ) => {
+      try {
+        const leetcodeService = new LeetCodeService();
+        const result = await leetcodeService.getAllProblems(skip, limit, filters);
+        
+        return {
+          problems: result.questions,
+          total: result.total,
+          hasMore: skip + limit < result.total,
+        };
+      } catch (error) {
+        logger.error('Failed to fetch LeetCode problems:', error);
+        throw error;
+      }
+    },
+
+    leetcodeDailyChallenge: async (
+      _: any,
+      __: any,
+      context: GraphQLContext
+    ) => {
+      try {
+        const leetcodeService = new LeetCodeService();
+        const challenge = await leetcodeService.getDailyChallenge();
+        
+        if (!challenge) {
+          throw new Error('Daily challenge not found');
+        }
+        
+        return challenge;
+      } catch (error) {
+        logger.error('Failed to fetch daily challenge:', error);
+        throw error;
+      }
+    },
+
+    searchLeetcodeProblems: async (
+      _: any,
+      { keyword, limit = 20 }: { keyword: string; limit?: number },
+      context: GraphQLContext
+    ) => {
+      try {
+        const leetcodeService = new LeetCodeService();
+        const problems = await leetcodeService.searchProblems(keyword, limit);
+        
+        return problems;
+      } catch (error) {
+        logger.error('Failed to search LeetCode problems:', error);
         throw error;
       }
     },
@@ -1205,6 +1339,109 @@ export const resolvers = {
         return content;
       } catch (error) {
         logger.error('Tweet generation failed:', error);
+        throw error;
+      }
+    },
+
+    // LeetCode mutations
+    connectLeetCode: async (
+      _: any,
+      { username }: { username: string },
+      context: GraphQLContext
+    ) => {
+      const user = requireAuth(context);
+      
+      try {
+        const leetcodeService = new LeetCodeService();
+        const isValid = await leetcodeService.validateUsername(username);
+        
+        if (!isValid) {
+          throw new Error('LeetCode username not found');
+        }
+        
+        // Update user with LeetCode username
+        await User.findByIdAndUpdate(user._id, {
+          leetcodeUsername: username,
+          'settings.integrations.leetcode.connected': true,
+          'settings.integrations.leetcode.username': username,
+          'settings.integrations.leetcode.connectedAt': new Date(),
+        });
+        
+        logger.info('LeetCode connected', { userId: user._id, leetcodeUsername: username });
+        
+        return {
+          success: true,
+          message: 'LeetCode account connected successfully',
+          username,
+        };
+      } catch (error) {
+        logger.error('LeetCode connection failed:', error);
+        throw error;
+      }
+    },
+
+    syncLeetCodeData: async (
+      _: any,
+      { username }: { username: string },
+      context: GraphQLContext
+    ) => {
+      const user = requireAuth(context);
+      
+      try {
+        const leetcodeService = new LeetCodeService();
+        const data = await leetcodeService.getComprehensiveUserData(username);
+        
+        if (!data.success) {
+          throw new Error('Failed to sync LeetCode data');
+        }
+        
+        // Update user's LeetCode data
+        await User.findByIdAndUpdate(user._id, {
+          'settings.integrations.leetcode.lastSyncAt': new Date(),
+          'settings.integrations.leetcode.stats': data.stats,
+          'settings.integrations.leetcode.profile': data.profile,
+        });
+        
+        logger.info('LeetCode data synced', { userId: user._id, leetcodeUsername: username });
+        
+        return {
+          success: true,
+          message: 'LeetCode data synced successfully',
+          data,
+        };
+      } catch (error) {
+        logger.error('LeetCode sync failed:', error);
+        throw error;
+      }
+    },
+
+    disconnectLeetCode: async (
+      _: any,
+      __: any,
+      context: GraphQLContext
+    ) => {
+      const user = requireAuth(context);
+      
+      try {
+        // Remove LeetCode connection
+        await User.findByIdAndUpdate(user._id, {
+          $unset: {
+            leetcodeUsername: '',
+            'settings.integrations.leetcode.connected': '',
+            'settings.integrations.leetcode.username': '',
+            'settings.integrations.leetcode.stats': '',
+            'settings.integrations.leetcode.profile': '',
+          },
+        });
+        
+        logger.info('LeetCode disconnected', { userId: user._id });
+        
+        return {
+          success: true,
+          message: 'LeetCode account disconnected successfully',
+        };
+      } catch (error) {
+        logger.error('LeetCode disconnection failed:', error);
         throw error;
       }
     },

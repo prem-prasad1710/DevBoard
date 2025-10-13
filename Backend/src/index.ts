@@ -30,6 +30,9 @@ import { startCronJobs } from './services/cronJobs';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import mobileRoutes from './routes/mobile';
+import leetcodeRoutes from './routes/leetcode';
+import profileRoutes from './routes/profile';
+import resumeRoutes from './routes/resume';
 import { healthCheck } from './routes/health';
 
 // Load environment variables
@@ -146,7 +149,10 @@ async function startServer() {
     // API Routes
     app.use('/api/auth', authRoutes);
     app.use('/api/users', userRoutes);
+    app.use('/api/profile', profileRoutes);
     app.use('/api/mobile', mobileRoutes);
+    app.use('/api/leetcode', leetcodeRoutes);
+    app.use('/api/resume', resumeRoutes);
 
     // Create HTTP server
     let httpServer: http.Server | https.Server;
