@@ -77,7 +77,6 @@ const createUserResponse = (user: IUser) => ({
   role: user.role,
   isActive: user.isActive,
   emailVerified: user.emailVerified,
-  profile: user.profile,
   settings: user.settings,
   createdAt: user.createdAt,
   lastLoginAt: user.lastLoginAt,

@@ -621,9 +621,7 @@ const userSchema = new Schema<IUser>(
 );
 
 // Indexes
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
-userSchema.index({ githubUsername: 1 }, { sparse: true });
+// Note: email, username, and githubUsername already have unique indexes from schema definition
 userSchema.index({ createdAt: -1 });
 userSchema.index({ lastActiveAt: -1 });
 userSchema.index({ 'stats.activityScore': -1 });

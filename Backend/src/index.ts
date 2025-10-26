@@ -16,15 +16,15 @@ import dotenv from 'dotenv';
 
 // Import configurations and utilities
 import { connectToDatabase } from './config/database';
-import { connectToRedis } from './config/redis';
-import { connectToKafka } from './config/kafka';
-import { typeDefs } from './graphql/schema';
-import { resolvers } from './graphql/resolvers';
-import { createContext } from './graphql/context';
+// import { connectToRedis } from './config/redis';
+// import { connectToKafka } from './config/kafka';
+// import { typeDefs } from './graphql/schema';
+// import { resolvers } from './graphql/resolvers';
+// import { createContext } from './graphql/context';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { authMiddleware } from './middleware/auth';
-import { startCronJobs } from './services/cronJobs';
+// import { startCronJobs } from './services/cronJobs';
 
 // Import routes
 import authRoutes from './routes/auth';
@@ -55,18 +55,32 @@ interface MyContext {
 
 async function startServer() {
   try {
+    console.log('🚀 Starting DevBoard Backend Server...');
     logger.info('🚀 Starting DevBoard Backend Server...');
 
+    console.log('📦 Loading dependencies...');
     // Connect to databases and external services
-    await connectToDatabase();
-    await connectToRedis();
+    try {
+      await connectToDatabase();
+      logger.info('✅ Database connected successfully');
+    } catch (error) {
+      logger.warn('⚠️  Database connection failed, continuing without database:', error);
+    }
+    
+    // try {
+    //   await connectToRedis();
+    //   logger.info('✅ Redis connected successfully');
+    // } catch (error) {
+    //   logger.warn('⚠️  Redis connection failed, continuing without Redis:', error);
+    // }
     
     // Connect to Kafka (optional, continue without it if it fails)
-    try {
-      await connectToKafka();
-    } catch (error) {
-      logger.warn('Kafka connection failed, continuing without it:', error);
-    }
+    // try {
+    //   await connectToKafka();
+    //   logger.info('✅ Kafka connected successfully');
+    // } catch (error) {
+    //   logger.warn('⚠️  Kafka connection failed, continuing without it:', error);
+    // }
 
     // Create Express app
     const app = express();
@@ -171,41 +185,41 @@ async function startServer() {
     }
 
     // Initialize Apollo Server
-    const server = new ApolloServer<MyContext>({
-      typeDefs,
-      resolvers,
-      plugins: [
-        ApolloServerPluginDrainHttpServer({ httpServer }),
-        // Use GraphQL Playground in development
-        NODE_ENV === 'development' 
-          ? ApolloServerPluginLandingPageLocalDefault({ 
-              embed: true,
-              includeCookies: true,
-            })
-          : ApolloServerPluginLandingPageLocalDefault({ footer: false }),
-      ],
-      // Enable introspection and playground in development
-      introspection: NODE_ENV === 'development',
-      formatError: (error) => {
-        logger.error('GraphQL Error:', error);
-        return {
-          message: error.message,
-          code: error.extensions?.code,
-          path: error.path || [],
-        };
-      },
-    });
+    // const server = new ApolloServer<MyContext>({
+    //   typeDefs,
+    //   resolvers,
+    //   plugins: [
+    //     ApolloServerPluginDrainHttpServer({ httpServer }),
+    //     // Use GraphQL Playground in development
+    //     NODE_ENV === 'development' 
+    //       ? ApolloServerPluginLandingPageLocalDefault({ 
+    //           embed: true,
+    //           includeCookies: true,
+    //         })
+    //       : ApolloServerPluginLandingPageLocalDefault({ footer: false }),
+    //   ],
+    //   // Enable introspection and playground in development
+    //   introspection: NODE_ENV === 'development',
+    //   formatError: (error) => {
+    //     logger.error('GraphQL Error:', error);
+    //     return {
+    //       message: error.message,
+    //       code: error.extensions?.code,
+    //       path: error.path || [],
+    //     };
+    //   },
+    // });
 
-    // Start Apollo Server
-    await server.start();
+    // // Start Apollo Server
+    // await server.start();
 
-    // Apply GraphQL middleware
-    app.use(
-      '/graphql',
-      expressMiddleware(server, {
-        context: createContext,
-      })
-    );
+    // // Apply GraphQL middleware
+    // app.use(
+    //   '/graphql',
+    //   expressMiddleware(server, {
+    //     context: createContext,
+    //   })
+    // );
 
     // Catch-all route for undefined endpoints
     app.use('*', (req, res) => {
@@ -232,7 +246,7 @@ async function startServer() {
     });
 
     // Start background services
-    startCronJobs();
+    // startCronJobs();
 
     // Graceful shutdown handling
     const gracefulShutdown = async (signal: string) => {
@@ -242,7 +256,7 @@ async function startServer() {
       httpServer.close(async () => {
         try {
           // Stop Apollo Server
-          await server.stop();
+          // await server.stop();
           logger.info('✅ Apollo Server stopped');
 
           // Close database connections
@@ -283,6 +297,7 @@ async function startServer() {
     logger.info('✅ DevBoard Backend Server started successfully!');
 
   } catch (error) {
+    console.error('❌ Failed to start server:', error);
     logger.error('❌ Failed to start server:', error);
     process.exit(1);
   }

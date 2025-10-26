@@ -8,16 +8,30 @@ export async function connectToDatabase(): Promise<void> {
     // Set mongoose options
     mongoose.set('strictQuery', false);
     
-    // Connect to MongoDB
-    await mongoose.connect(MONGODB_URI, {
-      // Connection options
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      family: 4, // Use IPv4, skip trying IPv6
-    });
-
-    logger.info('✅ Connected to MongoDB');
+    // Connect to MongoDB with retry logic
+    let retries = 5;
+    while (retries) {
+      try {
+        await mongoose.connect(MONGODB_URI, {
+          // Connection options
+          maxPoolSize: 10,
+          serverSelectionTimeoutMS: 5000,
+          socketTimeoutMS: 45000,
+          family: 4, // Use IPv4, skip trying IPv6
+        });
+        
+        logger.info('✅ Connected to MongoDB');
+        break;
+      } catch (error) {
+        retries -= 1;
+        logger.warn(`MongoDB connection attempt failed. ${retries} retries left.`);
+        if (retries === 0) {
+          throw error;
+        }
+        // Wait 2 seconds before retrying
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
 
     // Handle connection events
     mongoose.connection.on('error', (error) => {
