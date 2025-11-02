@@ -273,8 +273,6 @@ export const useCodeChallenges = (): UseCodeChallengesReturn => {
         setTotalProblems(total);
         setHasMore(more);
         setCurrentPage(Math.floor(skip / limit));
-        
-        return;
       } else {
         throw new Error(response.error || 'Failed to fetch problems');
       }
@@ -328,8 +326,40 @@ export const useCodeChallenges = (): UseCodeChallengesReturn => {
           }
         }
         
-        // Always fetch all LeetCode problems
-        await fetchAllProblems(0, 50);
+        // Always fetch all LeetCode problems inline to avoid dependency issue
+        try {
+          setError(null);
+          const response = await apiCall(`/leetcode/problems?skip=0&limit=50`);
+
+          if (response.success && response.data) {
+            const { problems, total, hasMore: more } = response.data;
+
+            // Transform problems to CodeChallenge format
+            const transformedChallenges = problems.map((problem: any) => ({
+              id: problem.frontendQuestionId || problem.questionId,
+              title: problem.title,
+              difficulty: problem.difficulty as 'Easy' | 'Medium' | 'Hard',
+              description: `LeetCode Problem #${problem.frontendQuestionId}`,
+              testCases: [],
+              status: problem.status || 'Not Attempted' as 'Not Attempted' | 'Attempted' | 'Solved',
+              acceptanceRate: problem.acRate || 0,
+              tags: problem.topicTags?.map((tag: any) => tag.name) || [],
+              leetcodeUrl: `https://leetcode.com/problems/${problem.titleSlug}/`,
+              solutionUrl: problem.hasSolution ? `https://leetcode.com/problems/${problem.titleSlug}/solution/` : undefined,
+            }));
+
+            setChallenges(transformedChallenges);
+            setTotalProblems(total);
+            setHasMore(more);
+            setCurrentPage(0);
+          }
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch problems';
+          setError(errorMessage);
+          toast.error(errorMessage);
+        } finally {
+          setLoading(false);
+        }
       } catch (err) {
         console.error('Error loading initial data:', err);
         setError('Failed to load initial data');
@@ -338,7 +368,6 @@ export const useCodeChallenges = (): UseCodeChallengesReturn => {
     };
 
     loadInitialData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
   return {

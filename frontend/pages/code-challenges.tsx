@@ -76,12 +76,15 @@ const CodeChallengesPage: React.FC = () => {
 
   // Filter challenges based on search and filters
   const filteredChallenges = challenges.filter((challenge: CodeChallenge) => {
-    const matchesSearch = !searchTerm || 
-      challenge.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      challenge.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (challenge.tags && challenge.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
+    const searchLower = searchTerm.toLowerCase();
+    const difficultyLower = selectedDifficulty.toLowerCase();
     
-    const matchesDifficulty = !selectedDifficulty || challenge.difficulty.toLowerCase() === selectedDifficulty.toLowerCase();
+    const matchesSearch = !searchTerm || 
+      challenge.title.toLowerCase().includes(searchLower) ||
+      challenge.description.toLowerCase().includes(searchLower) ||
+      (challenge.tags && challenge.tags.some(tag => tag.toLowerCase().includes(searchLower)));
+    
+    const matchesDifficulty = !selectedDifficulty || challenge.difficulty.toLowerCase() === difficultyLower;
     const matchesCategory = !selectedCategory || (challenge.tags && challenge.tags.includes(selectedCategory));
     const matchesStatus = !selectedStatus || challenge.status === selectedStatus;
     
