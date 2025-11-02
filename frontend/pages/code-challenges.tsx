@@ -17,6 +17,9 @@ const ExternalLinkIcon = dynamic(() => import('lucide-react').then(mod => ({ def
 const PlayIcon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Play })), { ssr: false });
 const BookmarkIcon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Bookmark })), { ssr: false });
 const StarIcon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Star })), { ssr: false });
+const ChevronDownIcon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.ChevronDown })), { ssr: false });
+const ThumbsUpIcon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.ThumbsUp })), { ssr: false });
+const HashIcon = dynamic(() => import('lucide-react').then(mod => ({ default: mod.Hash })), { ssr: false });
 
 const CodeChallengesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,10 +36,13 @@ const CodeChallengesPage: React.FC = () => {
     loading, 
     error, 
     isConnected,
+    totalProblems,
+    hasMore,
     syncLeetCode,
     connectLeetCode,
     disconnectLeetCode,
-    refreshData
+    refreshData,
+    loadMoreProblems
   } = useCodeChallenges();
 
   const handleSync = async () => {
@@ -69,13 +75,13 @@ const CodeChallengesPage: React.FC = () => {
   };
 
   // Filter challenges based on search and filters
-    const filteredChallenges = challenges.filter((challenge: CodeChallenge) => {
+  const filteredChallenges = challenges.filter((challenge: CodeChallenge) => {
     const matchesSearch = !searchTerm || 
       challenge.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       challenge.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (challenge.tags && challenge.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())));
     
-    const matchesDifficulty = !selectedDifficulty || challenge.difficulty === selectedDifficulty;
+    const matchesDifficulty = !selectedDifficulty || challenge.difficulty.toLowerCase() === selectedDifficulty.toLowerCase();
     const matchesCategory = !selectedCategory || (challenge.tags && challenge.tags.includes(selectedCategory));
     const matchesStatus = !selectedStatus || challenge.status === selectedStatus;
     
@@ -85,11 +91,11 @@ const CodeChallengesPage: React.FC = () => {
   const categories = Array.from(new Set(challenges?.flatMap((c: CodeChallenge) => c.tags || []) || []));
 
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy': return 'text-green-500 bg-green-100';
-      case 'medium': return 'text-yellow-500 bg-yellow-100';
-      case 'hard': return 'text-red-500 bg-red-100';
-      default: return 'text-gray-500 bg-gray-100';
+    switch (difficulty.toLowerCase()) {
+      case 'easy': return 'text-green-600 bg-green-50 border-green-200';
+      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'hard': return 'text-red-600 bg-red-50 border-red-200';
+      default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
@@ -139,47 +145,62 @@ const CodeChallengesPage: React.FC = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-800 mb-4">Code Challenges</h1>
-            <p className="text-gray-600">Track your coding progress with real-time LeetCode sync</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-gray-800 mb-2">Code Challenges</h1>
+                <p className="text-gray-600">
+                  Browse {totalProblems.toLocaleString()} LeetCode problems and track your progress
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Showing</p>
+                <p className="text-2xl font-bold text-blue-600">{filteredChallenges.length}</p>
+                <p className="text-sm text-gray-500">problems</p>
+              </div>
+            </div>
           </div>
 
           {/* Stats Dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg">
+            <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Solved</p>
                   <p className="text-2xl font-bold text-gray-900">{userStats?.totalSolved || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">of {totalProblems.toLocaleString()}</p>
                 </div>
                 <TrophyIcon className="h-8 w-8 text-yellow-500" />
               </div>
             </div>
 
-            <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg">
+            <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Easy Problems</p>
                   <p className="text-2xl font-bold text-green-600">{userStats?.easySolved || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">of {userStats?.totalEasy || 0}</p>
                 </div>
                 <CheckCircleIcon className="h-8 w-8 text-green-500" />
               </div>
             </div>
 
-            <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg">
+            <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Medium Problems</p>
                   <p className="text-2xl font-bold text-yellow-600">{userStats?.mediumSolved || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">of {userStats?.totalMedium || 0}</p>
                 </div>
                 <TargetIcon className="h-8 w-8 text-yellow-500" />
               </div>
             </div>
 
-            <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg">
+            <div className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Hard Problems</p>
                   <p className="text-2xl font-bold text-red-600">{userStats?.hardSolved || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">of {userStats?.totalHard || 0}</p>
                 </div>
                 <StarIcon className="h-8 w-8 text-red-500" />
               </div>
@@ -262,39 +283,57 @@ const CodeChallengesPage: React.FC = () => {
               {/* Challenges List */}
               <div className="space-y-4">
                 {filteredChallenges?.map((challenge: CodeChallenge, index: number) => (
-                  <div key={challenge.id} className="bg-white/70 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                  <div key={challenge.id} className="group bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-xl transition-all hover:border-blue-300">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-800">{challenge.title}</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(challenge.difficulty)}`}>
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="flex items-center gap-1 text-sm font-medium text-gray-500">
+                            <HashIcon className="h-4 w-4" />
+                            {challenge.id}
+                          </span>
+                          <h3 className="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
+                            {challenge.title}
+                          </h3>
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getDifficultyColor(challenge.difficulty)}`}>
                             {challenge.difficulty}
                           </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(challenge.status)}`}>
-                            {challenge.status}
-                          </span>
+                          {challenge.status !== 'Not Attempted' && (
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(challenge.status)}`}>
+                              {challenge.status}
+                            </span>
+                          )}
                         </div>
-                        <p className="text-gray-600 mb-3">{challenge.description}</p>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {challenge.tags?.map((tag: string) => (
-                            <span key={tag} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {challenge.tags?.slice(0, 5).map((tag: string) => (
+                            <span key={tag} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-md border border-blue-200 hover:bg-blue-100 transition-colors">
                               {tag}
                             </span>
                           ))}
+                          {challenge.tags && challenge.tags.length > 5 && (
+                            <span className="px-3 py-1 bg-gray-50 text-gray-600 text-xs font-medium rounded-md border border-gray-200">
+                              +{challenge.tags.length - 5} more
+                            </span>
+                          )}
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <span>Acceptance: {challenge.acceptanceRate?.toFixed(1)}%</span>
+                        <div className="flex items-center gap-6 text-sm">
+                          <div className="flex items-center gap-2 text-green-600">
+                            <ThumbsUpIcon className="h-4 w-4" />
+                            <span className="font-medium">{challenge.acceptanceRate?.toFixed(1)}%</span>
+                            <span className="text-gray-500">Acceptance</span>
+                          </div>
                           {challenge.tags && challenge.tags.length > 0 && (
-                            <span>Tags: {challenge.tags.slice(0, 2).join(', ')}</span>
+                            <div className="flex items-center gap-1 text-gray-500">
+                              <span className="text-xs">{challenge.tags.length} topics</span>
+                            </div>
                           )}
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 ml-4">
+                      <div className="flex flex-col gap-2 ml-6">
                         <a
                           href={challenge.leetcodeUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 text-sm font-medium shadow-md hover:shadow-lg transition-all"
                         >
                           <ExternalLinkIcon className="h-4 w-4" />
                           Open in LeetCode
@@ -304,7 +343,7 @@ const CodeChallengesPage: React.FC = () => {
                             href={challenge.solutionUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 text-sm font-medium shadow-md hover:shadow-lg transition-all"
                           >
                             <CodeIcon className="h-4 w-4" />
                             View Solution
@@ -314,6 +353,37 @@ const CodeChallengesPage: React.FC = () => {
                     </div>
                   </div>
                 ))}
+
+                {/* Load More Button */}
+                {hasMore && !loading && (
+                  <div className="flex justify-center mt-8">
+                    <button
+                      onClick={loadMoreProblems}
+                      className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 font-medium shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <ChevronDownIcon className="h-5 w-5" />
+                      Load More Problems
+                    </button>
+                  </div>
+                )}
+
+                {/* No results message */}
+                {filteredChallenges.length === 0 && !loading && (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 text-lg">No problems found matching your filters</p>
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedDifficulty('');
+                        setSelectedCategory('');
+                        setSelectedStatus('');
+                      }}
+                      className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
