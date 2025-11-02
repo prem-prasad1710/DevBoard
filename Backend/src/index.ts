@@ -23,7 +23,7 @@ import { connectToDatabase } from './config/database';
 // import { createContext } from './graphql/context';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
-import { authMiddleware } from './middleware/auth';
+import { optionalAuthMiddleware } from './middleware/auth';
 // import { startCronJobs } from './services/cronJobs';
 
 // Import routes
@@ -153,12 +153,12 @@ async function startServer() {
     // Static file serving for uploads
     app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-    // Apply auth middleware globally (optional auth)
-    app.use(authMiddleware);
-
-    // Health check endpoint
+    // Health check endpoint (before auth middleware)
     app.get('/health', healthCheck);
     app.get('/api/health', healthCheck);
+
+    // Apply optional auth middleware globally
+    app.use(optionalAuthMiddleware);
 
     // API Routes
     app.use('/api/auth', authRoutes);

@@ -64,10 +64,15 @@ export interface UseCodeChallengesReturn {
   userStats: UserStats | null;
   recentSubmissions: RecentSubmission[];
   isConnected: boolean;
+  totalProblems: number;
+  hasMore: boolean;
+  currentPage: number;
   syncLeetCode: (username: string) => Promise<boolean>;
   connectLeetCode: (username: string) => Promise<boolean>;
   disconnectLeetCode: () => Promise<boolean>;
   refreshData: () => Promise<void>;
+  loadMoreProblems: () => Promise<void>;
+  fetchAllProblems: (skip?: number, limit?: number) => Promise<void>;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
@@ -79,6 +84,9 @@ export const useCodeChallenges = (): UseCodeChallengesReturn => {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [recentSubmissions, setRecentSubmissions] = useState<RecentSubmission[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [totalProblems, setTotalProblems] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
 
   // API helper function
   const apiCall = async (endpoint: string, options: RequestInit = {}) => {
@@ -231,13 +239,69 @@ export const useCodeChallenges = (): UseCodeChallengesReturn => {
     }
   }, []);
 
+  // Fetch all LeetCode problems
+  const fetchAllProblems = useCallback(async (skip: number = 0, limit: number = 50) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await apiCall(`/leetcode/problems?skip=${skip}&limit=${limit}`);
+
+      if (response.success && response.data) {
+        const { problems, total, hasMore: more } = response.data;
+
+        // Transform problems to CodeChallenge format
+        const transformedChallenges = problems.map((problem: any) => ({
+          id: problem.frontendQuestionId || problem.questionId,
+          title: problem.title,
+          difficulty: problem.difficulty as 'Easy' | 'Medium' | 'Hard',
+          description: `LeetCode Problem #${problem.frontendQuestionId}`,
+          testCases: [],
+          status: problem.status || 'Not Attempted' as 'Not Attempted' | 'Attempted' | 'Solved',
+          acceptanceRate: problem.acRate || 0,
+          tags: problem.topicTags?.map((tag: any) => tag.name) || [],
+          leetcodeUrl: `https://leetcode.com/problems/${problem.titleSlug}/`,
+          solutionUrl: problem.hasSolution ? `https://leetcode.com/problems/${problem.titleSlug}/solution/` : undefined,
+        }));
+
+        if (skip === 0) {
+          setChallenges(transformedChallenges);
+        } else {
+          setChallenges((prev) => [...prev, ...transformedChallenges]);
+        }
+
+        setTotalProblems(total);
+        setHasMore(more);
+        setCurrentPage(Math.floor(skip / limit));
+      } else {
+        throw new Error(response.error || 'Failed to fetch problems');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch problems';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Load more problems
+  const loadMoreProblems = useCallback(async () => {
+    const limit = 50;
+    const skip = (currentPage + 1) * limit;
+    await fetchAllProblems(skip, limit);
+  }, [currentPage, fetchAllProblems]);
+
   // Refresh data
   const refreshData = useCallback(async () => {
     const username = localStorage.getItem('leetcodeUsername');
     if (username && isConnected) {
       await syncLeetCode(username);
+    } else {
+      // If not connected, fetch all problems
+      await fetchAllProblems(0, 50);
     }
-  }, [isConnected, syncLeetCode]);
+  }, [isConnected, syncLeetCode, fetchAllProblems]);
 
   // Load initial data
   useEffect(() => {
@@ -249,9 +313,51 @@ export const useCodeChallenges = (): UseCodeChallengesReturn => {
         const storedUsername = localStorage.getItem('leetcodeUsername');
         if (storedUsername) {
           setIsConnected(true);
-          await syncLeetCode(storedUsername);
-        } else {
-          // Load default mock data if no connection
+          // Sync user data
+          try {
+            const syncResponse = await apiCall(`/leetcode/sync/${storedUsername}`);
+            if (syncResponse.success && syncResponse.data) {
+              const { stats, recentSubmissions: submissions } = syncResponse.data;
+              if (stats) setUserStats(stats);
+              if (submissions && submissions.length > 0) setRecentSubmissions(submissions);
+            }
+          } catch (err) {
+            console.error('Error syncing user data:', err);
+          }
+        }
+        
+        // Always fetch all LeetCode problems inline to avoid dependency issue
+        try {
+          setError(null);
+          const response = await apiCall(`/leetcode/problems?skip=0&limit=50`);
+
+          if (response.success && response.data) {
+            const { problems, total, hasMore: more } = response.data;
+
+            // Transform problems to CodeChallenge format
+            const transformedChallenges = problems.map((problem: any) => ({
+              id: problem.frontendQuestionId || problem.questionId,
+              title: problem.title,
+              difficulty: problem.difficulty as 'Easy' | 'Medium' | 'Hard',
+              description: `LeetCode Problem #${problem.frontendQuestionId}`,
+              testCases: [],
+              status: problem.status || 'Not Attempted' as 'Not Attempted' | 'Attempted' | 'Solved',
+              acceptanceRate: problem.acRate || 0,
+              tags: problem.topicTags?.map((tag: any) => tag.name) || [],
+              leetcodeUrl: `https://leetcode.com/problems/${problem.titleSlug}/`,
+              solutionUrl: problem.hasSolution ? `https://leetcode.com/problems/${problem.titleSlug}/solution/` : undefined,
+            }));
+
+            setChallenges(transformedChallenges);
+            setTotalProblems(total);
+            setHasMore(more);
+            setCurrentPage(0);
+          }
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to fetch problems';
+          setError(errorMessage);
+          toast.error(errorMessage);
+        } finally {
           setLoading(false);
         }
       } catch (err) {
@@ -262,7 +368,7 @@ export const useCodeChallenges = (): UseCodeChallengesReturn => {
     };
 
     loadInitialData();
-  }, [syncLeetCode]);
+  }, []); // Only run once on mount
 
   return {
     challenges,
@@ -271,9 +377,14 @@ export const useCodeChallenges = (): UseCodeChallengesReturn => {
     userStats,
     recentSubmissions,
     isConnected,
+    totalProblems,
+    hasMore,
+    currentPage,
     syncLeetCode,
     connectLeetCode,
     disconnectLeetCode,
     refreshData,
+    loadMoreProblems,
+    fetchAllProblems,
   };
 };
